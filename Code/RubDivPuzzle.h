@@ -53,7 +53,6 @@ public:
 		void SwapColorWith( Element* element );
 
 		Color color;
-		int id;
 	};
 
 	class SquareMatrix

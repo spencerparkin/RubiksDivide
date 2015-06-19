@@ -55,7 +55,42 @@ void RubDivPuzzle::Scramble( void )
 	squareMatrixArray[0]->MakeHomogeneousOfColor( Element::COLOR_NONE );
 	squareMatrixArray[3]->MakeHomogeneousOfColor( Element::COLOR_NONE );
 
-	//...
+	int size = squareMatrixArray[0]->size;
+
+	int colorACount = size * size;
+	int colorBCount = size * size;
+
+	srand( unsigned( time( NULL ) ) );
+
+	for( int i = 0; i < size; i++ )
+	{
+		for( int j = 0; j < size; j++ )
+		{
+			for( int k = 1; k < 3; k++ )
+			{
+				Element::Color color;
+				if( rand() > RAND_MAX / 2 )
+				{
+					color = Element::COLOR_A;
+					if( colorACount == 0 )
+						color = Element::COLOR_B;
+				}
+				else
+				{
+					color = Element::COLOR_B;
+					if( colorBCount == 0 )
+						color = Element::COLOR_A;
+				}
+
+				squareMatrixArray[k]->matrix[i][j]->color = color;
+
+				if( color == Element::COLOR_A )
+					colorACount--;
+				else if( color == Element::COLOR_B )
+					colorBCount--;
+			}
+		}
+	}
 }
 
 void RubDivPuzzle::Reset( void )
@@ -178,6 +213,7 @@ void RubDivPuzzle::SwapRowsOrColumns( int rowOrColumn, int matrixOffsetA, int ma
 void RubDivPuzzle::Render( GLenum mode, const RenderData& renderData )
 {
 	//...
+	// If rendering in selection mode, embed 3-dimensional coordinates in stack for each element.
 }
 
 RubDivPuzzle::Orientation RubDivPuzzle::GetOrientation( void ) const
@@ -194,8 +230,6 @@ RubDivPuzzle::SquareMatrix::SquareMatrix( int size )
 {
 	this->size = size;
 
-	int id = 0;
-
 	matrix = new Element**[ size ];
 	for( int i = 0; i < size; i++ )
 	{
@@ -203,7 +237,6 @@ RubDivPuzzle::SquareMatrix::SquareMatrix( int size )
 		for( int j = 0; j < size; j++ )
 		{
 			Element* element = new Element;
-			element->id = id++;
 			element->color = Element::COLOR_NONE;
 
 			matrix[i][j] = element;
