@@ -184,6 +184,14 @@
 				RelativePath=".\Code\RubDivApp.h"
 				>
 			</File>
+			<File
+				RelativePath=".\Code\RubDivPuzzle.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Code\RubDivPuzzle.h"
+				>
+			</File>
 			<Filter
 				Name="c3ga"
 				>
