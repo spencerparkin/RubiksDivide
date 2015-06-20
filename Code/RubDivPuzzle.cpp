@@ -210,10 +210,34 @@ void RubDivPuzzle::SwapRowsOrColumns( int rowOrColumn, int matrixOffsetA, int ma
 	}
 }
 
-void RubDivPuzzle::Render( GLenum mode, const RenderData& renderData )
+void RubDivPuzzle::Render( GLenum mode, const RenderData& renderData ) const
 {
-	//...
-	// If rendering in selection mode, embed 3-dimensional coordinates in stack for each element.
+	float width = renderData.xMax - renderData.xMin;
+	float height = renderData.yMax - renderData.yMin;
+
+	float puzzleExtent = 0.f;
+	if( orientation == VERTICAL )
+		puzzleExtent = height;
+	else if( orientation == HORIZONTAL )
+		puzzleExtent = width;
+
+	float squareSize = puzzleExtent / ( 5.f / 2.f * ( sqrt( 2.f ) - 1.f ) + 4.f );
+
+	c3ga::vectorE2GA squareCenter;
+	if( orientation == VERTICAL )
+		squareCenter.set( c3ga::vectorE2GA::coord_e1_e2, renderData.xMin + width / 2.f, renderData.yMax - squareSize * sqrt( 2.f ) / 2.f );
+	else if( orientation == HORIZONTAL )
+		squareCenter.set( c3ga::vectorE2GA::coord_e1_e2, renderData.xMin + squareSize * sqrt( 2.f ) / 2.f, renderData.yMin + height / 2.f );
+
+	for( int i = 0; i < SQUARE_MATRIX_COUNT; i++ )
+	{
+		squareMatrixArray[i]->Render( mode, renderData, squareCenter, squareSize );
+
+		if( orientation == VERTICAL )
+			squareCenter.m_e2 -= squareSize * ( sqrt( 2.f ) + 1.f ) / 2.f;
+		else if( orientation == HORIZONTAL )
+			squareCenter.m_e1 += squareSize * ( sqrt( 2.f ) + 1.f ) / 2.f;
+	}
 }
 
 RubDivPuzzle::Orientation RubDivPuzzle::GetOrientation( void ) const
@@ -255,6 +279,21 @@ RubDivPuzzle::SquareMatrix::~SquareMatrix( void )
 	}
 
 	delete[] matrix;
+}
+
+void RubDivPuzzle::SquareMatrix::Render( GLenum mode, const RenderData& renderData, const c3ga::vectorE2GA& squareCenter, float squareSize ) const
+{
+	float elementSize = squareSize / float( size );
+
+	glColor3f( 1.f, 1.f, 1.f );
+	glBegin( GL_QUADS );
+
+	glVertex2f( squareCenter.m_e1 - squareSize / 2.f, squareCenter.m_e2 - squareSize / 2.f );
+	glVertex2f( squareCenter.m_e1 + squareSize / 2.f, squareCenter.m_e2 - squareSize / 2.f );
+	glVertex2f( squareCenter.m_e1 + squareSize / 2.f, squareCenter.m_e2 + squareSize / 2.f );
+	glVertex2f( squareCenter.m_e1 - squareSize / 2.f, squareCenter.m_e2 + squareSize / 2.f );
+
+	glEnd();
 }
 
 bool RubDivPuzzle::SquareMatrix::IsHomogeneousOfColor( Element::Color color ) const
@@ -307,6 +346,20 @@ void RubDivPuzzle::Element::SwapColorWith( Element* element )
 	Color tempColor = this->color;
 	this->color = element->color;
 	element->color = tempColor;
+}
+
+RubDivPuzzle::RenderData::RenderData( void )
+{
+	xMin = 0.f;
+	xMax = 0.f;
+	yMin = 0.f;
+	yMax = 0.f;
+
+	rotor.set( c3ga::rotorE2GA::coord_scalar_e1e2, 1.f, 0.f );
+	squareOffset = -1;
+
+	translation = 0.f;
+	rowOrColumn = -1;
 }
 
 // RubDivPuzzle.cpp

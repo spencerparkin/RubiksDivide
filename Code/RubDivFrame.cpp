@@ -12,6 +12,12 @@
 
 RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/ ) : wxFrame( parent, wxID_ANY, "Rubik's Divide", pos, size )
 {
+	wxMenu* orientMenu = new wxMenu();
+	wxMenuItem* orientVerticalMenuItem = new wxMenuItem( orientMenu, ID_OrientVertical, "Vertical", "Orient the puzzle vertically", wxITEM_CHECK );
+	wxMenuItem* orientHorizontalMenuItem = new wxMenuItem( orientMenu, ID_OrientHorizontal, "Horizontal", "Orient the puzzle horizontally", wxITEM_CHECK );
+	orientMenu->Append( orientVerticalMenuItem );
+	orientMenu->Append( orientHorizontalMenuItem );
+
 	wxMenu* puzzleMenu = new wxMenu();
 	wxMenuItem* newPuzzleMenuItem = new wxMenuItem( puzzleMenu, ID_NewPuzzle, "New Puzzle", "Start a new puzzle." );
 	wxMenuItem* loadPuzzleMenuItem = new wxMenuItem( puzzleMenu, ID_LoadPuzzle, "Load Puzzle", "Load an old puzzle." );
@@ -30,6 +36,7 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 
 	wxMenuBar* menuBar = new wxMenuBar();
 	menuBar->Append( puzzleMenu, "Puzzle" );
+	menuBar->Append( orientMenu, "Orient" );
 	menuBar->Append( helpMenu, "Help" );
 	SetMenuBar( menuBar );
 
@@ -47,6 +54,10 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 	Bind( wxEVT_MENU, &RubDivFrame::OnSavePuzzle, this, ID_SavePuzzle );
 	Bind( wxEVT_MENU, &RubDivFrame::OnExit, this, ID_Exit );
 	Bind( wxEVT_MENU, &RubDivFrame::OnAbout, this, ID_About );
+	Bind( wxEVT_MENU, &RubDivFrame::OnOrientVertical, this, ID_OrientVertical );
+	Bind( wxEVT_MENU, &RubDivFrame::OnOrientHorizontal, this, ID_OrientHorizontal );
+	Bind( wxEVT_UPDATE_UI, &RubDivFrame::OnUpdateMenuItemUI, this, ID_OrientVertical );
+	Bind( wxEVT_UPDATE_UI, &RubDivFrame::OnUpdateMenuItemUI, this, ID_OrientHorizontal );
 }
 
 /*virtual*/ RubDivFrame::~RubDivFrame( void )
@@ -61,6 +72,8 @@ void RubDivFrame::OnNewPuzzle( wxCommandEvent& event )
 
 	RubDivPuzzle* puzzle = new RubDivPuzzle( size );
 	wxGetApp().SetPuzzle( puzzle );
+
+	canvas->Refresh();
 }
 
 void RubDivFrame::OnLoadPuzzle( wxCommandEvent& event )
@@ -78,6 +91,63 @@ void RubDivFrame::OnExit( wxCommandEvent& event )
 
 void RubDivFrame::OnAbout( wxCommandEvent& event )
 {
+}
+
+void RubDivFrame::OnOrientVertical( wxCommandEvent& event )
+{
+	RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
+	if( puzzle )
+	{
+		puzzle->SetOrientation( RubDivPuzzle::VERTICAL );
+		canvas->Refresh();
+	}
+}
+
+void RubDivFrame::OnOrientHorizontal( wxCommandEvent& event )
+{
+	RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
+	if( puzzle )
+	{
+		puzzle->SetOrientation( RubDivPuzzle::HORIZONTAL );
+		canvas->Refresh();
+	}
+}
+
+void RubDivFrame::OnUpdateMenuItemUI( wxUpdateUIEvent& event )
+{
+	RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
+
+	switch( event.GetId() )
+	{
+		case ID_OrientVertical:
+		{
+			if( !puzzle )
+				event.Enable( false );
+			else
+			{
+				event.Enable( true );
+				if( puzzle->GetOrientation() == RubDivPuzzle::VERTICAL )
+					event.Check( true );
+				else
+					event.Check( false );
+			}
+			break;
+		}
+		case ID_OrientHorizontal:
+		{
+			if( !puzzle )
+				event.Enable( false );
+			else
+			{
+				event.Enable( true );
+				if( puzzle->GetOrientation() == RubDivPuzzle::HORIZONTAL )
+					event.Check( true );
+				else
+					event.Check( false );
+			}
+			break;
+		}
+	}
 }
 
 // RubDivFrame.cpp

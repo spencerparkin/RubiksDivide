@@ -24,19 +24,25 @@ public:
 	bool ShiftRowOrColumnForward( int rowOrColumn );
 	bool ShiftRowOrColumnBackward( int rowOrColumn );
 
-	// This describtes how we render the puzzle.
+	// This describtes how we render the puzzle with user-manipulation applied.
 	struct RenderData
 	{
+		RenderData( void );
+
+		// This is our view into the XY-plane.
+		float yMin, yMax;
+		float xMin, xMax;
+
 		// Draw the indicated square matrix rotated by the given amount.
-		c3ga::rotorE3GA rotor;
+		c3ga::rotorE2GA rotor;
 		int squareOffset;
 
 		// Offset the indiciate row/column of each square matrix.
-		c3ga::evenVersor motor;
+		float translation;
 		int rowOrColumn;
 	};
 
-	void Render( GLenum mode, const RenderData& renderData );
+	void Render( GLenum mode, const RenderData& renderData ) const;
 
 	struct Element
 	{
@@ -61,6 +67,7 @@ public:
 		SquareMatrix( int size );
 		~SquareMatrix( void );
 
+		void Render( GLenum mode, const RenderData& renderData, const c3ga::vectorE2GA& squareCenter, float squareSize ) const;
 		bool IsHomogeneousOfColor( Element::Color color ) const;
 		int CountColor( Element::Color color ) const;
 		void MakeHomogeneousOfColor( Element::Color color );

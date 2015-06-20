@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "RubDivPuzzle.h"
+
 #include <wx/glcanvas.h>
 
 class RubDivCanvas : public wxGLCanvas
@@ -14,6 +16,7 @@ public:
 private:
 
 	void BindContext( void );
+	void Render( GLenum mode );
 
 	void OnPaint( wxPaintEvent& event );
 	void OnSize( wxSizeEvent& event );
@@ -24,6 +27,8 @@ private:
 	wxGLContext* context;
 
 	static int attributeList[];
+
+	RubDivPuzzle::RenderData renderData;
 };
 
 // RubDivCanvas.h

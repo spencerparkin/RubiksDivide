@@ -4,8 +4,6 @@
 
 #include <wx/frame.h>
 #include <wx/glcanvas.h>
-#include <gl/gl.h>
-#include <gl/glu.h>
 
 class RubDivCanvas;
 
@@ -25,6 +23,8 @@ private:
 		ID_SavePuzzle,
 		ID_Exit,
 		ID_About,
+		ID_OrientVertical,
+		ID_OrientHorizontal,
 	};
 
 	void OnNewPuzzle( wxCommandEvent& event );
@@ -32,6 +32,9 @@ private:
 	void OnSavePuzzle( wxCommandEvent& event );
 	void OnExit( wxCommandEvent& event );
 	void OnAbout( wxCommandEvent& event );
+	void OnOrientVertical( wxCommandEvent& event );
+	void OnOrientHorizontal( wxCommandEvent& event );
+	void OnUpdateMenuItemUI( wxUpdateUIEvent& event );
 
 	RubDivCanvas* canvas;
 };

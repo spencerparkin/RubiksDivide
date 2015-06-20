@@ -1,6 +1,10 @@
 // RubDivCanvas.cpp
 
 #include "RubDivCanvas.h"
+#include "RubDivApp.h"
+
+#include <gl/gl.h>
+#include <gl/glu.h>
 
 int RubDivCanvas::attributeList[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0 };
 
@@ -28,15 +32,42 @@ void RubDivCanvas::BindContext( void )
 	SetCurrent( *context );
 }
 
-void RubDivCanvas::OnPaint( wxPaintEvent& event )
+void RubDivCanvas::Render( GLenum mode )
 {
 	BindContext();
 
+	GLint viewport[4];
+	glGetIntegerv( GL_VIEWPORT, viewport );
+
+	float width = float( viewport[2] );
+	float height = float( viewport[3] );
+
+	renderData.xMin = 0.f;
+	renderData.xMax = width;
+	renderData.yMin = 0.f;
+	renderData.yMax = height;
+
+	glMatrixMode( GL_PROJECTION );
+	glLoadIdentity();
+	gluOrtho2D( renderData.xMin, renderData.xMax, renderData.yMin, renderData.yMax );
+
+	glMatrixMode( GL_MODELVIEW );
+	glLoadIdentity();
+
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+	RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
+	if( puzzle )
+		puzzle->Render( mode, renderData );
 
 	glFlush();
 
 	SwapBuffers();
+}
+
+void RubDivCanvas::OnPaint( wxPaintEvent& event )
+{
+	Render( GL_RENDER );
 }
 
 void RubDivCanvas::OnSize( wxSizeEvent& event )
