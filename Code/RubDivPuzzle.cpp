@@ -58,42 +58,47 @@ void RubDivPuzzle::Scramble( void )
 	squareMatrixArray[0]->MakeHomogeneousOfColor( Element::COLOR_NONE );
 	squareMatrixArray[3]->MakeHomogeneousOfColor( Element::COLOR_NONE );
 
-	int size = squareMatrixArray[0]->size;
-
-	int colorACount = size * size;
-	int colorBCount = size * size;
-
-	srand( unsigned( time( NULL ) ) );
-
-	for( int i = 0; i < size; i++ )
+	do
 	{
-		for( int j = 0; j < size; j++ )
+		int size = squareMatrixArray[0]->size;
+		wxASSERT( size > 1 );
+
+		int colorACount = size * size;
+		int colorBCount = size * size;
+
+		srand( unsigned( time( NULL ) ) );
+
+		for( int i = 0; i < size; i++ )
 		{
-			for( int k = 1; k < 3; k++ )
+			for( int j = 0; j < size; j++ )
 			{
-				Element::Color color;
-				if( rand() > RAND_MAX / 2 )
+				for( int k = 1; k < 3; k++ )
 				{
-					color = Element::COLOR_A;
-					if( colorACount == 0 )
-						color = Element::COLOR_B;
-				}
-				else
-				{
-					color = Element::COLOR_B;
-					if( colorBCount == 0 )
+					Element::Color color;
+					if( rand() > RAND_MAX / 2 )
+					{
 						color = Element::COLOR_A;
+						if( colorACount == 0 )
+							color = Element::COLOR_B;
+					}
+					else
+					{
+						color = Element::COLOR_B;
+						if( colorBCount == 0 )
+							color = Element::COLOR_A;
+					}
+
+					squareMatrixArray[k]->matrix[i][j]->color = color;
+
+					if( color == Element::COLOR_A )
+						colorACount--;
+					else if( color == Element::COLOR_B )
+						colorBCount--;
 				}
-
-				squareMatrixArray[k]->matrix[i][j]->color = color;
-
-				if( color == Element::COLOR_A )
-					colorACount--;
-				else if( color == Element::COLOR_B )
-					colorBCount--;
 			}
 		}
 	}
+	while( IsSolved() );
 }
 
 void RubDivPuzzle::Reset( void )
