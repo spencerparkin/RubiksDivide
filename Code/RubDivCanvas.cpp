@@ -32,9 +32,20 @@ void RubDivCanvas::BindContext( void )
 	SetCurrent( *context );
 }
 
-void RubDivCanvas::Render( GLenum mode )
+void RubDivCanvas::Render( GLenum mode, const wxPoint* mousePos /*= 0*/, RubDivPuzzle::Pick* pick /*= 0*/ )
 {
 	BindContext();
+
+	int hitBufferSize = 0;
+	unsigned int* hitBuffer = 0;
+	if( mode == GL_SELECT )
+	{
+		hitBufferSize = 512;		// We only have at most one pick-able thing on the name stack at any given time.
+		hitBuffer = new unsigned int[ hitBufferSize ];
+		glSelectBuffer( hitBufferSize, hitBuffer );
+		glRenderMode( GL_SELECT );
+		glInitNames();
+	}
 
 	GLint viewport[4];
 	glGetIntegerv( GL_VIEWPORT, viewport );
@@ -49,6 +60,8 @@ void RubDivCanvas::Render( GLenum mode )
 
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
+	if( mode == GL_SELECT )
+		gluPickMatrix( GLdouble( mousePos->x ), GLdouble( viewport[3] - mousePos->y - 1 ), 1.0, 1.0, viewport );
 	gluOrtho2D( renderData.xMin, renderData.xMax, renderData.yMin, renderData.yMax );
 
 	glMatrixMode( GL_MODELVIEW );
@@ -62,7 +75,17 @@ void RubDivCanvas::Render( GLenum mode )
 
 	glFlush();
 
-	SwapBuffers();
+	if( mode == GL_SELECT )
+	{
+		int hitCount = glRenderMode( GL_RENDER );
+		if( puzzle )
+			puzzle->ProcessHitBuffer( hitBuffer, hitBufferSize, hitCount, *pick );
+
+		delete[] hitBuffer;
+	}
+
+	if( mode == GL_RENDER )
+		SwapBuffers();
 }
 
 void RubDivCanvas::OnPaint( wxPaintEvent& event )
@@ -82,6 +105,15 @@ void RubDivCanvas::OnSize( wxSizeEvent& event )
 
 void RubDivCanvas::OnMouseLeftDown( wxMouseEvent& event )
 {
+	RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
+	if( puzzle )
+	{
+		wxPoint mousePos = event.GetPosition();
+		RubDivPuzzle::Pick pick;
+		Render( GL_SELECT, &mousePos, &pick );
+
+
+	}
 }
 
 void RubDivCanvas::OnMouseMotion( wxMouseEvent& event )

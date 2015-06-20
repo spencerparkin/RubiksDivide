@@ -50,6 +50,19 @@ public:
 
 	void Render( GLenum mode, const RenderData& renderData ) const;
 
+	struct Pick
+	{
+		int squareOffset;
+		int row, col;
+
+		void PushNameStackData( void );
+		void PopNameStackData( void );
+
+		void ReadHitRecord( unsigned int* hitRecord );
+	};
+
+	void ProcessHitBuffer( unsigned int* hitBuffer, int hitBufferSize, int hitCount, Pick& pick );
+
 	struct Element
 	{
 		enum Color

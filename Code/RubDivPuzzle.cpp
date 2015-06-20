@@ -350,6 +350,14 @@ void RubDivPuzzle::SquareMatrix::Render( GLenum mode, const RenderData& renderDa
 			for( int k = 0; k < vertexCount; k++ )
 				vertex[k] = vertex[k] + squareCenter;
 
+			Pick pick;
+			pick.squareOffset = squareOffset;
+			pick.row = i;
+			pick.col = j;
+
+			if( mode == GL_SELECT )
+				pick.PushNameStackData();
+
 			glBegin( GL_TRIANGLE_FAN );
 
 			const c3ga::vectorE3GA* color = puzzle->TranslateColor( element->color );
@@ -366,7 +374,36 @@ void RubDivPuzzle::SquareMatrix::Render( GLenum mode, const RenderData& renderDa
 			glVertex2f( vertex[1].m_e1, vertex[1].m_e2 );
 
 			glEnd();
+
+			if( mode == GL_SELECT )
+				pick.PopNameStackData();
 		}
+	}
+}
+
+void RubDivPuzzle::ProcessHitBuffer( unsigned int* hitBuffer, int hitBufferSize, int hitCount, Pick& pick )
+{
+	pick.squareOffset = -1;
+	pick.row = 0;
+	pick.col = 0;
+
+	unsigned int* hitRecord = hitBuffer;
+	float smallestZ = 9999.f;
+	for( int i = 0; i < hitCount; i++ )
+	{
+		unsigned int nameCount = hitRecord[0];
+		wxASSERT( nameCount == 3 );
+		if( nameCount == 3 )
+		{
+			float minZ = float( hitRecord[1] ) / float( 0x7FFFFFFF );
+			if( minZ < smallestZ )
+			{
+				smallestZ = minZ;
+				pick.ReadHitRecord( hitRecord );
+			}
+		}
+
+		hitRecord += 3 + nameCount;
 	}
 }
 
@@ -434,6 +471,27 @@ RubDivPuzzle::RenderData::RenderData( void )
 
 	translation = 0.f;
 	rowOrColumn = -1;
+}
+
+void RubDivPuzzle::Pick::PushNameStackData( void )
+{
+	glPushName( squareOffset );
+	glPushName( row );
+	glPushName( col );
+}
+
+void RubDivPuzzle::Pick::PopNameStackData( void )
+{
+	glPopName();
+	glPopName();
+	glPopName();
+}
+
+void RubDivPuzzle::Pick::ReadHitRecord( unsigned int* hitRecord )
+{
+	squareOffset = hitRecord[3];
+	row = hitRecord[4];
+	col = hitRecord[5];
 }
 
 // RubDivPuzzle.cpp
