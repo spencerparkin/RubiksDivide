@@ -218,10 +218,10 @@ void RubDivPuzzle::SwapRowsOrColumns( int rowOrColumn, int matrixOffsetA, int ma
 	}
 }
 
-void RubDivPuzzle::Render( GLenum mode, const RenderData& renderData ) const
+float RubDivPuzzle::CalculateSquareSize( const RenderData& renderData, float& width, float& height ) const
 {
-	float width = renderData.xMax - renderData.xMin;
-	float height = renderData.yMax - renderData.yMin;
+	width = renderData.xMax - renderData.xMin;
+	height = renderData.yMax - renderData.yMin;
 
 	float puzzleExtent = 0.f;
 	if( orientation == VERTICAL )
@@ -230,6 +230,13 @@ void RubDivPuzzle::Render( GLenum mode, const RenderData& renderData ) const
 		puzzleExtent = width;
 
 	float squareSize = puzzleExtent / ( 5.f / 2.f * ( sqrt( 2.f ) - 1.f ) + 4.f );
+	return squareSize;
+}
+
+void RubDivPuzzle::Render( GLenum mode, const RenderData& renderData ) const
+{
+	float width, height;
+	float squareSize = CalculateSquareSize( renderData, width, height );
 
 	c3ga::vectorE2GA squareCenter;
 	if( orientation == VERTICAL )
@@ -246,6 +253,53 @@ void RubDivPuzzle::Render( GLenum mode, const RenderData& renderData ) const
 		else if( orientation == HORIZONTAL )
 			squareCenter.m_e1 += squareSize * ( sqrt( 2.f ) + 1.f ) / 2.f;
 	}
+}
+
+bool RubDivPuzzle::ManipulatePuzzle( RenderData& renderData )
+{
+	bool manipulated = false;
+
+	float width, height;
+	float squareSize = CalculateSquareSize( renderData, width, height );
+
+	if( renderData.squareOffset != -1 )
+	{
+		const float pi = 3.1415926536f;
+		if( fabs( renderData.rotationAngle ) > pi / 4.f )
+		{
+			//...
+		}
+	}
+	else if( renderData.rowOrColumn != -1 )
+	{
+		if( fabs( renderData.translation ) > squareSize / 2.f )
+		{
+			if( renderData.translation > 0.f )
+			{
+				if( orientation == VERTICAL )
+					manipulated = ShiftRowOrColumnBackward( renderData.rowOrColumn );
+				else if( orientation == HORIZONTAL )
+					manipulated = ShiftRowOrColumnForward( renderData.rowOrColumn );
+
+				//tmp...
+				renderData.translation = 0.f;
+				return true;
+			}
+			else if( renderData.translation < 0.f )
+			{
+				if( orientation == VERTICAL )
+					manipulated = ShiftRowOrColumnForward( renderData.rowOrColumn );
+				else if( orientation == HORIZONTAL )
+					manipulated = ShiftRowOrColumnBackward( renderData.rowOrColumn );
+
+				//tmp...
+				renderData.translation = 0.f;
+				return true;
+			}
+		}
+	}
+
+	return manipulated;
 }
 
 RubDivPuzzle::Orientation RubDivPuzzle::GetOrientation( void ) const

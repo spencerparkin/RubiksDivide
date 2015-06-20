@@ -24,7 +24,6 @@ public:
 
 	bool IsSolved( void ) const;
 
-	// These are used to manipulate the puzzle.
 	bool RotateSquareMatrixCW( int squareOffset );
 	bool RotateSquareMatrixCCW( int squareOffset );
 	bool ShiftRowOrColumnForward( int rowOrColumn );
@@ -49,6 +48,8 @@ public:
 	};
 
 	void Render( GLenum mode, const RenderData& renderData ) const;
+
+	bool ManipulatePuzzle( RenderData& renderData );
 
 	struct Pick
 	{
@@ -121,6 +122,7 @@ public:
 private:
 
 	void SwapRowsOrColumns( int rowOrColumn, int matrixOffsetA, int matrixOffsetB );
+	float CalculateSquareSize( const RenderData& renderData, float& width, float& height ) const;
 
 	SquareMatrix** squareMatrixArray;
 

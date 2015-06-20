@@ -120,6 +120,10 @@ void RubDivCanvas::OnMouseLeftUp( wxMouseEvent& event )
 {
 	if( pick.squareOffset != -1 )
 	{
+		RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
+		if( puzzle )
+			puzzle->ManipulatePuzzle( renderData );
+
 		ReleaseMouse();
 
 		pick.squareOffset = -1;
