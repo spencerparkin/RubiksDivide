@@ -4,8 +4,12 @@
 
 #include <wx/frame.h>
 #include <wx/glcanvas.h>
+#include <wx/timer.h>
 
 class RubDivCanvas;
+
+// TODO: Expose A/B colors.
+// TODO: Add scramble option.
 
 class RubDivFrame : public wxFrame
 {
@@ -25,6 +29,7 @@ private:
 		ID_About,
 		ID_OrientVertical,
 		ID_OrientHorizontal,
+		ID_Timer,
 	};
 
 	void OnNewPuzzle( wxCommandEvent& event );
@@ -35,8 +40,11 @@ private:
 	void OnOrientVertical( wxCommandEvent& event );
 	void OnOrientHorizontal( wxCommandEvent& event );
 	void OnUpdateMenuItemUI( wxUpdateUIEvent& event );
+	void OnTimer( wxTimerEvent& event );
 
 	RubDivCanvas* canvas;
+
+	wxTimer timer;
 };
 
 // RubDivFrame.h

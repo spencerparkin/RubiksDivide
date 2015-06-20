@@ -40,7 +40,7 @@ public:
 		float xMin, xMax;
 
 		// Draw the indicated square matrix rotated by the given amount.
-		c3ga::rotorE2GA rotor;
+		float rotationAngle;
 		int squareOffset;
 
 		// Offset the indiciate row/column of each square matrix.
@@ -52,6 +52,8 @@ public:
 
 	struct Pick
 	{
+		Pick( void );
+
 		int squareOffset;
 		int row, col;
 

@@ -15,6 +15,7 @@ RubDivCanvas::RubDivCanvas( wxWindow* parent ) : wxGLCanvas( parent, wxID_ANY, a
 	Bind( wxEVT_PAINT, &RubDivCanvas::OnPaint, this );
 	Bind( wxEVT_SIZE, &RubDivCanvas::OnSize, this );
 	Bind( wxEVT_LEFT_DOWN, &RubDivCanvas::OnMouseLeftDown, this );
+	Bind( wxEVT_LEFT_UP, &RubDivCanvas::OnMouseLeftUp, this );
 	Bind( wxEVT_MOTION, &RubDivCanvas::OnMouseMotion, this );
 	Bind( wxEVT_MOUSE_CAPTURE_LOST, &RubDivCanvas::OnMouseCaptureLost, this );
 }
@@ -108,20 +109,107 @@ void RubDivCanvas::OnMouseLeftDown( wxMouseEvent& event )
 	RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
 	if( puzzle )
 	{
-		wxPoint mousePos = event.GetPosition();
-		RubDivPuzzle::Pick pick;
+		mousePos = event.GetPosition();
 		Render( GL_SELECT, &mousePos, &pick );
+		if( pick.squareOffset != -1 )
+			CaptureMouse();
+	}
+}
 
+void RubDivCanvas::OnMouseLeftUp( wxMouseEvent& event )
+{
+	if( pick.squareOffset != -1 )
+	{
+		ReleaseMouse();
 
+		pick.squareOffset = -1;
 	}
 }
 
 void RubDivCanvas::OnMouseMotion( wxMouseEvent& event )
 {
+	RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
+	if( !puzzle )
+		return;
+
+	if( event.LeftIsDown() && pick.squareOffset != -1 )
+	{
+		wxPoint mouseDelta = event.GetPosition() - mousePos;
+
+		switch( puzzle->GetOrientation() )
+		{
+			case RubDivPuzzle::VERTICAL:
+			{
+				if( abs( mouseDelta.x ) < abs( mouseDelta.y ) )
+				{
+					renderData.rowOrColumn = pick.col;
+					renderData.translation = -float( mouseDelta.y );
+					renderData.squareOffset = -1;
+				}
+				else
+				{
+					renderData.squareOffset = pick.squareOffset;
+					renderData.rotationAngle = -float( mouseDelta.x ) / 32.f;
+					renderData.rowOrColumn = -1;
+				}
+
+				break;
+			}
+			case RubDivPuzzle::HORIZONTAL:
+			{
+				if( abs( mouseDelta.y ) < abs( mouseDelta.x ) )
+				{
+					renderData.rowOrColumn = pick.row;
+					renderData.translation = float( mouseDelta.x );
+					renderData.squareOffset = -1;
+				}
+				else
+				{
+					renderData.squareOffset = pick.squareOffset;
+					renderData.rotationAngle = float( mouseDelta.y ) / 32.f;
+					renderData.rowOrColumn = -1;
+				}
+
+				break;
+			}
+		}
+
+		Refresh();
+	}
 }
 
 void RubDivCanvas::OnMouseCaptureLost( wxMouseCaptureLostEvent& event )
 {
+	pick.squareOffset = -1;
+}
+
+bool RubDivCanvas::Animate( void )
+{
+	if( pick.squareOffset == -1 )
+	{
+		if( renderData.squareOffset != -1 )
+		{
+			if( renderData.rotationAngle == 0.f )
+				renderData.squareOffset = -1;
+			else if( fabs( renderData.rotationAngle ) >= 1e-5f )
+				renderData.rotationAngle *= 0.9f;
+			else
+				renderData.rotationAngle = 0.f;
+			return true;
+		}
+		else if( renderData.rowOrColumn != -1 )
+		{
+			if( renderData.translation == 0.f )
+				renderData.rowOrColumn = -1;
+			else if( fabs( renderData.translation ) >= 1e-5f )
+				renderData.translation *= 0.9f;
+			else
+				renderData.translation = 0.f;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 // RubDivCanvas.cpp

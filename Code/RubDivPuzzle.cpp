@@ -344,7 +344,22 @@ void RubDivPuzzle::SquareMatrix::Render( GLenum mode, const RenderData& renderDa
 
 			if( renderData.squareOffset == squareOffset )
 			{
-				//...
+				c3ga::rotorE2GA rotor;
+				float halfAngle = renderData.rotationAngle / 2.f;
+				rotor.m_scalar = cos( halfAngle );
+				rotor.m_e1_e2 = sin( halfAngle );
+				for( int k = 0; k < vertexCount; k++ )
+					vertex[k] = c3ga::applyUnitVersor( rotor, vertex[k] );
+			}
+			else if( puzzle->GetOrientation() == VERTICAL && renderData.rowOrColumn == j )
+			{
+				for( int k = 0; k < vertexCount; k++ )
+					vertex[k].m_e2 += renderData.translation;
+			}
+			else if( puzzle->GetOrientation() == HORIZONTAL && renderData.rowOrColumn == i )
+			{
+				for( int k = 0; k < vertexCount; k++ )
+					vertex[k].m_e1 += renderData.translation;
 			}
 
 			for( int k = 0; k < vertexCount; k++ )
@@ -466,11 +481,18 @@ RubDivPuzzle::RenderData::RenderData( void )
 	yMin = 0.f;
 	yMax = 0.f;
 
-	rotor.set( c3ga::rotorE2GA::coord_scalar_e1e2, 1.f, 0.f );
+	rotationAngle = 0.f;
 	squareOffset = -1;
 
 	translation = 0.f;
 	rowOrColumn = -1;
+}
+
+RubDivPuzzle::Pick::Pick( void )
+{
+	squareOffset = -1;
+	row = 0;
+	col = 0;
 }
 
 void RubDivPuzzle::Pick::PushNameStackData( void )

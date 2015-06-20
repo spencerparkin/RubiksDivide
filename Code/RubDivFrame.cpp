@@ -10,7 +10,7 @@
 #include <wx/sizer.h>
 #include <wx/statusbr.h>
 
-RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/ ) : wxFrame( parent, wxID_ANY, "Rubik's Divide", pos, size )
+RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/ ) : wxFrame( parent, wxID_ANY, "Rubik's Divide", pos, size ), timer( this, ID_Timer )
 {
 	wxMenu* orientMenu = new wxMenu();
 	wxMenuItem* orientVerticalMenuItem = new wxMenuItem( orientMenu, ID_OrientVertical, "Vertical", "Orient the puzzle vertically", wxITEM_CHECK );
@@ -58,6 +58,9 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 	Bind( wxEVT_MENU, &RubDivFrame::OnOrientHorizontal, this, ID_OrientHorizontal );
 	Bind( wxEVT_UPDATE_UI, &RubDivFrame::OnUpdateMenuItemUI, this, ID_OrientVertical );
 	Bind( wxEVT_UPDATE_UI, &RubDivFrame::OnUpdateMenuItemUI, this, ID_OrientHorizontal );
+	Bind( wxEVT_TIMER, &RubDivFrame::OnTimer, this, ID_Timer );
+
+	timer.Start(1);
 }
 
 /*virtual*/ RubDivFrame::~RubDivFrame( void )
@@ -93,6 +96,12 @@ void RubDivFrame::OnExit( wxCommandEvent& event )
 
 void RubDivFrame::OnAbout( wxCommandEvent& event )
 {
+}
+
+void RubDivFrame::OnTimer( wxTimerEvent& event )
+{
+	if( canvas->Animate() )
+		canvas->Refresh();
 }
 
 void RubDivFrame::OnOrientVertical( wxCommandEvent& event )
