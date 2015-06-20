@@ -10,6 +10,12 @@ class RubDivPuzzle
 {
 public:
 
+	enum Orientation
+	{
+		VERTICAL,
+		HORIZONTAL,
+	};
+
 	RubDivPuzzle( int size );
 	~RubDivPuzzle( void );
 
@@ -67,7 +73,7 @@ public:
 		SquareMatrix( int size );
 		~SquareMatrix( void );
 
-		void Render( GLenum mode, const RenderData& renderData, const c3ga::vectorE2GA& squareCenter, float squareSize ) const;
+		void Render( GLenum mode, const RenderData& renderData, const c3ga::vectorE2GA& squareCenter, float squareSize, int squareOffset, const RubDivPuzzle* puzzle ) const;
 		bool IsHomogeneousOfColor( Element::Color color ) const;
 		int CountColor( Element::Color color ) const;
 		void MakeHomogeneousOfColor( Element::Color color );
@@ -86,14 +92,16 @@ public:
 		SQUARE_MATRIX_COUNT = 4,
 	};
 
-	enum Orientation
-	{
-		VERTICAL,
-		HORIZONTAL,
-	};
-
 	Orientation GetOrientation( void ) const;
 	void SetOrientation( Orientation orientation );
+
+	const c3ga::vectorE3GA& GetColorA( void ) const;
+	const c3ga::vectorE3GA& GetColorB( void ) const;
+
+	void SetColorA( c3ga::vectorE3GA& color );
+	void SetColorB( c3ga::vectorE3GA& color );
+
+	const c3ga::vectorE3GA* TranslateColor( Element::Color color ) const;
 
 private:
 
@@ -102,6 +110,9 @@ private:
 	SquareMatrix** squareMatrixArray;
 
 	Orientation orientation;
+
+	c3ga::vectorE3GA colorA;
+	c3ga::vectorE3GA colorB;
 };
 
 // RubDivPuzzle.h

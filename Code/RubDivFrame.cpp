@@ -73,6 +73,8 @@ void RubDivFrame::OnNewPuzzle( wxCommandEvent& event )
 	RubDivPuzzle* puzzle = new RubDivPuzzle( size );
 	wxGetApp().SetPuzzle( puzzle );
 
+	puzzle->Scramble();
+
 	canvas->Refresh();
 }
 
