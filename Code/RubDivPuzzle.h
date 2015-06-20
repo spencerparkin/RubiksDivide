@@ -27,9 +27,6 @@ public:
 	// This describtes how we render the puzzle.
 	struct RenderData
 	{
-		// This is the amount of area an element should take up in the XY-plane.
-		float elementArea;
-
 		// Draw the indicated square matrix rotated by the given amount.
 		c3ga::rotorE3GA rotor;
 		int squareOffset;

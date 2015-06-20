@@ -185,6 +185,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Code\RubDivCanvas.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Code\RubDivCanvas.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Code\RubDivFrame.cpp"
 				>
 			</File>

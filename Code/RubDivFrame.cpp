@@ -3,9 +3,12 @@
 #include "RubDivFrame.h"
 #include "RubDivApp.h"
 #include "RubDivPuzzle.h"
+#include "RubDivCanvas.h"
 
 #include <wx/menu.h>
 #include <wx/numdlg.h>
+#include <wx/sizer.h>
+#include <wx/statusbr.h>
 
 RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/ ) : wxFrame( parent, wxID_ANY, "Rubik's Divide", pos, size )
 {
@@ -15,6 +18,7 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 	wxMenuItem* savePuzzleMenuItem = new wxMenuItem( puzzleMenu, ID_SavePuzzle, "Save Puzzle", "Save your puzzle." );
 	wxMenuItem* exitMenuItem = new wxMenuItem( puzzleMenu, ID_Exit, "Exit", "Exit this program." );
 	puzzleMenu->Append( newPuzzleMenuItem );
+	puzzleMenu->AppendSeparator();
 	puzzleMenu->Append( loadPuzzleMenuItem );
 	puzzleMenu->Append( savePuzzleMenuItem );
 	puzzleMenu->AppendSeparator();
@@ -28,6 +32,15 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 	menuBar->Append( puzzleMenu, "Puzzle" );
 	menuBar->Append( helpMenu, "Help" );
 	SetMenuBar( menuBar );
+
+	//wxStatusBar* statusBar = new wxStatusBar( this );
+	//SetStatusBar( statusBar );
+
+	canvas = new RubDivCanvas( this );
+
+	wxBoxSizer* boxSizer = new wxBoxSizer( wxVERTICAL );
+	boxSizer->Add( canvas, 1, wxALL | wxGROW, 0 );
+	SetSizer( boxSizer );
 
 	Bind( wxEVT_MENU, &RubDivFrame::OnNewPuzzle, this, ID_NewPuzzle );
 	Bind( wxEVT_MENU, &RubDivFrame::OnLoadPuzzle, this, ID_LoadPuzzle );
@@ -60,6 +73,7 @@ void RubDivFrame::OnSavePuzzle( wxCommandEvent& event )
 
 void RubDivFrame::OnExit( wxCommandEvent& event )
 {
+	Close( true );
 }
 
 void RubDivFrame::OnAbout( wxCommandEvent& event )

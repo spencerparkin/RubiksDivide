@@ -3,6 +3,11 @@
 #pragma once
 
 #include <wx/frame.h>
+#include <wx/glcanvas.h>
+#include <gl/gl.h>
+#include <gl/glu.h>
+
+class RubDivCanvas;
 
 class RubDivFrame : public wxFrame
 {
@@ -27,6 +32,8 @@ private:
 	void OnSavePuzzle( wxCommandEvent& event );
 	void OnExit( wxCommandEvent& event );
 	void OnAbout( wxCommandEvent& event );
+
+	RubDivCanvas* canvas;
 };
 
 // RubDivFrame.h
