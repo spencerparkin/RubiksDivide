@@ -9,6 +9,7 @@
 #include <wx/numdlg.h>
 #include <wx/sizer.h>
 #include <wx/statusbr.h>
+#include <wx/msgdlg.h>
 
 RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/ ) : wxFrame( parent, wxID_ANY, "Rubik's Divide", pos, size ), timer( this, ID_Timer )
 {
@@ -109,8 +110,10 @@ void RubDivFrame::OnOrientVertical( wxCommandEvent& event )
 	RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
 	if( puzzle )
 	{
-		puzzle->SetOrientation( RubDivPuzzle::VERTICAL );
-		canvas->Refresh();
+		if( puzzle->SetOrientation( RubDivPuzzle::VERTICAL ) )
+			canvas->Refresh();
+		else
+			wxMessageBox( "Center the puzzle before changing orientation.", "Oops", wxICON_EXCLAMATION );
 	}
 }
 
@@ -119,8 +122,10 @@ void RubDivFrame::OnOrientHorizontal( wxCommandEvent& event )
 	RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
 	if( puzzle )
 	{
-		puzzle->SetOrientation( RubDivPuzzle::HORIZONTAL );
-		canvas->Refresh();
+		if( puzzle->SetOrientation( RubDivPuzzle::HORIZONTAL ) )
+			canvas->Refresh();
+		else
+			wxMessageBox( "Center the puzzle before changing orientation.", "Oops", wxICON_EXCLAMATION );
 	}
 }
 

@@ -153,7 +153,7 @@ void RubDivCanvas::OnMouseMotion( wxMouseEvent& event )
 				else
 				{
 					renderData.squareOffset = pick.squareOffset;
-					renderData.rotationAngle = -float( mouseDelta.x ) / 32.f;
+					renderData.rotationAngle = float( mouseDelta.x ) / 32.f;
 					renderData.rowOrColumn = -1;
 				}
 
@@ -170,7 +170,7 @@ void RubDivCanvas::OnMouseMotion( wxMouseEvent& event )
 				else
 				{
 					renderData.squareOffset = pick.squareOffset;
-					renderData.rotationAngle = float( mouseDelta.y ) / 32.f;
+					renderData.rotationAngle = -float( mouseDelta.y ) / 32.f;
 					renderData.rowOrColumn = -1;
 				}
 

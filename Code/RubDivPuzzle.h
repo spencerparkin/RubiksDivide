@@ -109,7 +109,7 @@ public:
 	};
 
 	Orientation GetOrientation( void ) const;
-	void SetOrientation( Orientation orientation );
+	bool SetOrientation( Orientation orientation );
 
 	const c3ga::vectorE3GA& GetColorA( void ) const;
 	const c3ga::vectorE3GA& GetColorB( void ) const;

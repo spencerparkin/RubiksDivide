@@ -265,9 +265,29 @@ bool RubDivPuzzle::ManipulatePuzzle( RenderData& renderData )
 	if( renderData.squareOffset != -1 )
 	{
 		const float pi = 3.1415926536f;
-		if( fabs( renderData.rotationAngle ) > pi / 4.f )
+
+		while( renderData.rotationAngle >= 2.f * pi )
+			renderData.rotationAngle -= 2.f * pi;
+
+		while( renderData.rotationAngle < 0.f )
+			renderData.rotationAngle += 2.f * pi;
+
+		int rotationCount = 0;
+		if( pi / 4.f <= renderData.rotationAngle && renderData.rotationAngle < 3.f * pi / 4.f )
+			rotationCount = 1;
+		else if( 3.f * pi / 4.f <= renderData.rotationAngle && renderData.rotationAngle < 5.f * pi / 4.f )
+			rotationCount = 2;
+		else if( 5.f * pi / 4.f <= renderData.rotationAngle && renderData.rotationAngle < 7.f * pi / 4.f )
+			rotationCount = 3;
+
+		for( int i = 0; i < rotationCount; i++ )
+			if( RotateSquareMatrixCCW( renderData.squareOffset ) )
+				manipulated = true;
+
+		if( manipulated )
 		{
-			//...
+			//tmp...
+			renderData.rotationAngle = 0.f;
 		}
 	}
 	else if( renderData.rowOrColumn != -1 )
@@ -307,9 +327,16 @@ RubDivPuzzle::Orientation RubDivPuzzle::GetOrientation( void ) const
 	return orientation;
 }
 
-void RubDivPuzzle::SetOrientation( Orientation orientation )
+bool RubDivPuzzle::SetOrientation( Orientation orientation )
 {
+	if( !squareMatrixArray[0]->IsHomogeneousOfColor( Element::COLOR_NONE ) )
+		return false;
+
+	if( !squareMatrixArray[3]->IsHomogeneousOfColor( Element::COLOR_NONE ) )
+		return false;
+
 	this->orientation = orientation;
+	return true;
 }
 
 const c3ga::vectorE3GA& RubDivPuzzle::GetColorA( void ) const
@@ -406,7 +433,7 @@ void RubDivPuzzle::SquareMatrix::Render( GLenum mode, const RenderData& renderDa
 				c3ga::rotorE2GA rotor;
 				float halfAngle = renderData.rotationAngle / 2.f;
 				rotor.m_scalar = cos( halfAngle );
-				rotor.m_e1_e2 = sin( halfAngle );
+				rotor.m_e1_e2 = -sin( halfAngle );
 				for( int k = 0; k < vertexCount; k++ )
 					vertex[k] = c3ga::applyUnitVersor( rotor, vertex[k] );
 			}
@@ -508,7 +535,7 @@ void RubDivPuzzle::SquareMatrix::MakeHomogeneousOfColor( Element::Color color )
 void RubDivPuzzle::SquareMatrix::FlipDiagonal( void )
 {
 	for( int i = 0; i < size; i++ )
-		for( int j = 0; j < size; j++ )
+		for( int j = 0; j < i; j++ )
 			matrix[i][j]->SwapColorWith( matrix[j][i] );
 }
 
@@ -516,7 +543,7 @@ void RubDivPuzzle::SquareMatrix::FlipHorizontal( void )
 {
 	for( int j = 0; j < size; j++ )
 		for( int i = 0; i < size / 2; i++ )
-			matrix[i][j]->SwapColorWith( matrix[ size - i - 1 ][i] );
+			matrix[i][j]->SwapColorWith( matrix[ size - i - 1 ][j] );
 }
 
 void RubDivPuzzle::SquareMatrix::FlipVertical( void )
