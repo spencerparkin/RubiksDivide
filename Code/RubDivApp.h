@@ -20,6 +20,8 @@ public:
 	RubDivPuzzle* GetPuzzle( void );
 	void SetPuzzle( RubDivPuzzle* puzzle );
 
+	RubDivFrame* GetFrame( void ) { return frame; }
+
 private:
 
 	RubDivPuzzle* puzzle;

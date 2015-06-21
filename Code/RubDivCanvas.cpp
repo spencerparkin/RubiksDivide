@@ -2,6 +2,7 @@
 
 #include "RubDivCanvas.h"
 #include "RubDivApp.h"
+#include "RubDivFrame.h"
 
 #include <gl/gl.h>
 #include <gl/glu.h>
@@ -121,6 +122,8 @@ void RubDivCanvas::OnMouseLeftUp( wxMouseEvent& event )
 {
 	if( pick.squareOffset != -1 )
 	{
+		ReleaseMouse();
+
 		RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
 		if( puzzle )
 		{
@@ -129,8 +132,6 @@ void RubDivCanvas::OnMouseLeftUp( wxMouseEvent& event )
 			if( puzzle->IsSolved() )
 				wxMessageBox( "You rock!", "Solved!", wxICON_EXCLAMATION );
 		}
-
-		ReleaseMouse();
 
 		pick.squareOffset = -1;
 	}
@@ -145,46 +146,48 @@ void RubDivCanvas::OnMouseMotion( wxMouseEvent& event )
 	if( event.LeftIsDown() && pick.squareOffset != -1 )
 	{
 		wxPoint mouseDelta = event.GetPosition() - mousePos;
-
-		switch( puzzle->GetOrientation() )
+		if( mouseDelta.x * mouseDelta.x + mouseDelta.y * mouseDelta.y > 4 )
 		{
-			case RubDivPuzzle::VERTICAL:
+			switch( puzzle->GetOrientation() )
 			{
-				if( abs( mouseDelta.x ) < abs( mouseDelta.y ) )
+				case RubDivPuzzle::VERTICAL:
 				{
-					renderData.rowOrColumn = pick.col;
-					renderData.translation = -float( mouseDelta.y );
-					renderData.squareOffset = -1;
-				}
-				else
-				{
-					renderData.squareOffset = pick.squareOffset;
-					renderData.rotationAngle = float( mouseDelta.x ) / 32.f;
-					renderData.rowOrColumn = -1;
-				}
+					if( renderData.rowOrColumn == -1 && renderData.squareOffset == -1 )
+					{
+						if( abs( mouseDelta.x ) < abs( mouseDelta.y ) )
+							renderData.rowOrColumn = pick.col;
+						else
+							renderData.squareOffset = pick.squareOffset;
+					}
 
-				break;
-			}
-			case RubDivPuzzle::HORIZONTAL:
-			{
-				if( abs( mouseDelta.y ) < abs( mouseDelta.x ) )
-				{
-					renderData.rowOrColumn = pick.row;
-					renderData.translation = float( mouseDelta.x );
-					renderData.squareOffset = -1;
-				}
-				else
-				{
-					renderData.squareOffset = pick.squareOffset;
-					renderData.rotationAngle = -float( mouseDelta.y ) / 32.f;
-					renderData.rowOrColumn = -1;
-				}
+					if( renderData.rowOrColumn != -1 )
+						renderData.translation = -float( mouseDelta.y );
+					else if( renderData.squareOffset != -1 )
+						renderData.rotationAngle = float( mouseDelta.x ) / 64.f;
 
-				break;
+					break;
+				}
+				case RubDivPuzzle::HORIZONTAL:
+				{
+					if( renderData.rowOrColumn == -1 && renderData.squareOffset == -1 )
+					{
+						if( abs( mouseDelta.y ) < abs( mouseDelta.x ) )
+							renderData.rowOrColumn = pick.row;
+						else
+							renderData.squareOffset = pick.squareOffset;
+					}
+
+					if( renderData.rowOrColumn != -1 )
+						renderData.translation = float( mouseDelta.x );
+					else if( renderData.squareOffset != -1 )
+						renderData.rotationAngle = -float( mouseDelta.y ) / 64.f;
+
+					break;
+				}
 			}
+
+			Refresh();
 		}
-
-		Refresh();
 	}
 }
 
@@ -203,7 +206,7 @@ bool RubDivCanvas::Animate( void )
 			if( renderData.rotationAngle == 0.f )
 				renderData.squareOffset = -1;
 			else if( fabs( renderData.rotationAngle ) >= 1e-5f )
-				renderData.rotationAngle *= 0.9f;
+				renderData.rotationAngle *= 0.8f;
 			else
 				renderData.rotationAngle = 0.f;
 			return true;
@@ -213,12 +216,15 @@ bool RubDivCanvas::Animate( void )
 			if( renderData.translation == 0.f )
 				renderData.rowOrColumn = -1;
 			else if( fabs( renderData.translation ) >= 1e-5f )
-				renderData.translation *= 0.9f;
+				renderData.translation *= 0.8f;
 			else
 				renderData.translation = 0.f;
 			return true;
 		}
 	}
+
+	wxString text = wxString::Format( "rotAgl: %1.2f degs; trans: %1.2f units", renderData.rotationAngle * 180.f / 3.1415926536f, renderData.translation );
+	wxGetApp().GetFrame()->GetStatusBar()->SetStatusText( text );
 
 	return false;
 }

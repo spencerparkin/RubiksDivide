@@ -41,8 +41,8 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 	menuBar->Append( helpMenu, "Help" );
 	SetMenuBar( menuBar );
 
-	//wxStatusBar* statusBar = new wxStatusBar( this );
-	//SetStatusBar( statusBar );
+	wxStatusBar* statusBar = new wxStatusBar( this );
+	SetStatusBar( statusBar );
 
 	canvas = new RubDivCanvas( this );
 
