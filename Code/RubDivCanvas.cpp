@@ -5,6 +5,7 @@
 
 #include <gl/gl.h>
 #include <gl/glu.h>
+#include <wx/msgdlg.h>
 
 int RubDivCanvas::attributeList[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0 };
 
@@ -122,7 +123,12 @@ void RubDivCanvas::OnMouseLeftUp( wxMouseEvent& event )
 	{
 		RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
 		if( puzzle )
+		{
 			puzzle->ManipulatePuzzle( renderData );
+
+			if( puzzle->IsSolved() )
+				wxMessageBox( "You rock!", "Solved!", wxICON_EXCLAMATION );
+		}
 
 		ReleaseMouse();
 
@@ -193,6 +199,7 @@ bool RubDivCanvas::Animate( void )
 	{
 		if( renderData.squareOffset != -1 )
 		{
+			// TODO: Fix this...we need to go towords the nearest multiple of 2pi.
 			if( renderData.rotationAngle == 0.f )
 				renderData.squareOffset = -1;
 			else if( fabs( renderData.rotationAngle ) >= 1e-5f )
