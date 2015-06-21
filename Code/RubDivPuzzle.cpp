@@ -106,21 +106,24 @@ void RubDivPuzzle::Scramble( void )
 
 	int size = squareMatrixArray[0]->size;
 
+	int* columnArray = new int[ size ];
+	for( int i = 0; i < size; i++ )
+		columnArray[i] = i;
+
 	int iterationCount = 100;
 	for( int i = 0; i < iterationCount; i++ )
 	{
 		int columnArraySize = RandomInteger( 1, size );
-		int* columnArray = new int[ columnArraySize ];
-		for( int j = 0; j < columnArraySize; j++ )
-			columnArray[j] = j;
-
 		int squareOffset = ( i % 2 == 0 ) ? 1 : 2;
 
 		// Once both passes are complete, a single permutation of
 		// the group of permutations has been applied to the puzzle.
 		for( int j = 0; j < 2; j++ )
 		{
-			ShuffleArray( columnArray, columnArraySize );
+			if( j == 0 )
+				ShuffleArray( columnArray, size );
+			else
+				ShuffleArray( columnArray, columnArraySize );
 
 			for( int k = 0; k < columnArraySize; k++ )
 			{
@@ -141,11 +144,11 @@ void RubDivPuzzle::Scramble( void )
 			}
 		}
 
-		delete[] columnArray;
-
 		wxASSERT( squareMatrixArray[0]->IsHomogeneousOfColor( Element::COLOR_NONE ) );
 		wxASSERT( squareMatrixArray[3]->IsHomogeneousOfColor( Element::COLOR_NONE ) );
 	}
+
+	delete[] columnArray;
 
 #endif
 }
