@@ -48,13 +48,14 @@ bool RubDivPuzzle::IsSolved( void ) const
 	return false;
 }
 
-// Note that to ensure solvability, we could start with a puzzle
-// in the solved state, then randomly apply valid moves to the
-// puzzle, but a more interesting approach here is to randomly
-// populate the elements of the puzzle with the idea or hunch, if
-// you will, that any such population is reachable from the solved state.
 void RubDivPuzzle::Scramble( void )
 {
+	srand( unsigned( time( NULL ) ) );
+
+	// Interestingly, the disabled code below, more often than not, generates
+	// a puzzle that I believe has no solution!  Hmmm!!!
+#if 0
+
 	squareMatrixArray[0]->MakeHomogeneousOfColor( Element::COLOR_NONE );
 	squareMatrixArray[3]->MakeHomogeneousOfColor( Element::COLOR_NONE );
 
@@ -65,8 +66,6 @@ void RubDivPuzzle::Scramble( void )
 
 		int colorACount = size * size;
 		int colorBCount = size * size;
-
-		srand( unsigned( time( NULL ) ) );
 
 		for( int i = 0; i < size; i++ )
 		{
@@ -99,6 +98,81 @@ void RubDivPuzzle::Scramble( void )
 		}
 	}
 	while( IsSolved() );
+
+#else
+
+	Reset();
+	SetOrientation( VERTICAL );
+
+	int size = squareMatrixArray[0]->size;
+
+	int iterationCount = 100;
+	for( int i = 0; i < iterationCount; i++ )
+	{
+		int columnArraySize = RandomInteger( 1, size );
+		int* columnArray = new int[ columnArraySize ];
+		for( int j = 0; j < columnArraySize; j++ )
+			columnArray[j] = j;
+
+		int squareOffset = ( i % 2 == 0 ) ? 1 : 2;
+
+		// Once both passes are complete, a single permutation of
+		// the group of permutations has been applied to the puzzle.
+		for( int j = 0; j < 2; j++ )
+		{
+			ShuffleArray( columnArray, columnArraySize );
+
+			for( int k = 0; k < columnArraySize; k++ )
+			{
+				int column = columnArray[k];
+				bool shifted = false;
+				if( ( i + j ) % 2 == 0 )
+					shifted = ShiftRowOrColumnBackward( column );
+				else
+					shifted = ShiftRowOrColumnForward( column );
+				wxASSERT( shifted );
+
+				int rotationCount = RandomInteger( 0, 3 );
+				while( rotationCount-- > 0 )
+				{
+					bool rotated = RotateSquareMatrixCCW( squareOffset );
+					wxASSERT( rotated );
+				}
+			}
+		}
+
+		delete[] columnArray;
+
+		wxASSERT( squareMatrixArray[0]->IsHomogeneousOfColor( Element::COLOR_NONE ) );
+		wxASSERT( squareMatrixArray[3]->IsHomogeneousOfColor( Element::COLOR_NONE ) );
+	}
+
+#endif
+}
+
+/*static*/ int RubDivPuzzle::RandomInteger( int min, int max )
+{
+	float t = float( rand() ) / float( RAND_MAX );
+	int integer = int( float( min ) * ( 1.f - t ) + float( max ) * t );
+	if( integer < min )
+		integer = min;
+	if( integer > max )
+		integer = max;
+	return integer;
+}
+
+/*static*/ void RubDivPuzzle::ShuffleArray( int* array, int arraySize )
+{
+	for( int i = 0; i < arraySize; i++ )
+	{
+		int j = RandomInteger( i, arraySize - 1 );
+		if( j != i )
+		{
+			array[i] ^= array[j];
+			array[j] ^= array[i];
+			array[i] ^= array[j];
+		}
+	}
 }
 
 void RubDivPuzzle::Reset( void )

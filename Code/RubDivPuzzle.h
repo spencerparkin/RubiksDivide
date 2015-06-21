@@ -119,6 +119,9 @@ public:
 
 	const c3ga::vectorE3GA* TranslateColor( Element::Color color ) const;
 
+	static int RandomInteger( int min, int max );
+	static void ShuffleArray( int* array, int arraySize );
+
 private:
 
 	void SwapRowsOrColumns( int rowOrColumn, int matrixOffsetA, int matrixOffsetB );
