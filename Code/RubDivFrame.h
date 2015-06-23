@@ -25,6 +25,8 @@ private:
 		ID_NewPuzzle = wxID_HIGHEST,
 		ID_LoadPuzzle,
 		ID_SavePuzzle,
+		ID_ScramblePuzzle,
+		ID_SolvePuzzle,
 		ID_Exit,
 		ID_About,
 		ID_OrientVertical,
@@ -35,6 +37,8 @@ private:
 	void OnNewPuzzle( wxCommandEvent& event );
 	void OnLoadPuzzle( wxCommandEvent& event );
 	void OnSavePuzzle( wxCommandEvent& event );
+	void OnScramblePuzzle( wxCommandEvent& event );
+	void OnSolvePuzzle( wxCommandEvent& event );
 	void OnExit( wxCommandEvent& event );
 	void OnAbout( wxCommandEvent& event );
 	void OnOrientVertical( wxCommandEvent& event );

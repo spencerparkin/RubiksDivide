@@ -13,17 +13,14 @@ public:
 	RubDivSolver( void );
 	~RubDivSolver( void );
 
-	struct Move
-	{
-		int squareOffset;
-		int rotateCCWCount;
-		int columnOffset;
-		int shiftDirection;
-	};
+	//bool Solve( const RubDivPuzzle* puzzle, MoveList& moveList );
 
-	typedef std::list< Move > MoveList;
+private:
 
-	bool Solve( const RubDivPuzzle* puzzle, MoveList& moveList );
+	//bool FindCommutator( MoveList& moveList );
+	//void AppendCommutator( MoveList& moveList, int i, int j );
+
+	//RubDivPuzzle* puzzleClone;
 };
 
 // RubDivSolver.h

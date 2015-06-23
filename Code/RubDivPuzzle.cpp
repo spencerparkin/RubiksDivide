@@ -25,6 +25,35 @@ RubDivPuzzle::~RubDivPuzzle( void )
 	delete[] squareMatrixArray;
 }
 
+RubDivPuzzle::Element::Color RubDivPuzzle::GetColor( int squareOffset, int i, int j ) const
+{
+	wxASSERT( 0 <= squareOffset && squareOffset < SQUARE_MATRIX_COUNT );
+	wxASSERT( 0 <= i && i < GetSize() );
+	wxASSERT( 0 <= j && j < GetSize() );
+
+	return squareMatrixArray[ squareOffset ]->matrix[i][j]->color;
+}
+
+RubDivPuzzle* RubDivPuzzle::Clone( void ) const
+{
+	RubDivPuzzle* puzzleClone = new RubDivPuzzle( squareMatrixArray[0]->size );
+
+	for( int squareOffset = 0; squareOffset < SQUARE_MATRIX_COUNT; squareOffset++ )
+	{
+		SquareMatrix* sourceSquareMatrix = squareMatrixArray[ squareOffset ];
+		SquareMatrix* targetSquareMatrix = puzzleClone->squareMatrixArray[ squareOffset ];
+		for( int i = 0; i < targetSquareMatrix->size; i++ )
+			for( int j = 0; j < targetSquareMatrix->size; j++ )
+				targetSquareMatrix->matrix[i][j]->color = sourceSquareMatrix->matrix[i][j]->color;
+	}
+
+	puzzleClone->orientation = orientation;
+	puzzleClone->colorA = colorA;
+	puzzleClone->colorB = colorB;
+
+	return puzzleClone;
+}
+
 bool RubDivPuzzle::IsSolved( void ) const
 {
 	if( !squareMatrixArray[0]->IsHomogeneousOfColor( Element::COLOR_NONE ) )
@@ -357,16 +386,17 @@ void RubDivPuzzle::Render( GLenum mode, const RenderData& renderData ) const
 		angle += 2.f * float( M_PI );
 }
 
-bool RubDivPuzzle::ManipulatePuzzle( RenderData& renderData )
+bool RubDivPuzzle::TranslateMove( const RenderData& renderData, Move& move )
 {
-	bool manipulated = false;
+	move.squareOffset = -1;
+	move.rowOrColumn = -1;
 
 	float width, height;
 	float squareSize = CalculateSquareSize( renderData, width, height );
 
 	if( renderData.squareOffset != -1 )
 	{
-		NormalizeAngle( renderData.rotationAngle );
+		NormalizeAngle( const_cast< RenderData* >( &renderData )->rotationAngle );
 
 		int rotationCount = 0;
 		if( M_PI / 4.f <= renderData.rotationAngle && renderData.rotationAngle < 3.f * M_PI / 4.f )
@@ -376,43 +406,105 @@ bool RubDivPuzzle::ManipulatePuzzle( RenderData& renderData )
 		else if( 5.f * M_PI / 4.f <= renderData.rotationAngle && renderData.rotationAngle < 7.f * M_PI / 4.f )
 			rotationCount = 3;
 
-		for( int i = 0; i < rotationCount; i++ )
-			if( RotateSquareMatrixCCW( renderData.squareOffset ) )
-				manipulated = true;
-
-		if( manipulated )
-			renderData.rotationAngle -= M_PI / 2.f * float( rotationCount );
+		move.squareOffset = renderData.squareOffset;
+		move.rotateCCWCount = rotationCount;
+		move.rowOrColumn = -1;
+		move.shiftDir = SHIFT_NONE;
+		return true;
 	}
 	else if( renderData.rowOrColumn != -1 )
 	{
 		if( fabs( renderData.translation ) > squareSize / 2.f )
 		{
-			float length = c3ga::norm( CalculateSquareCenter( renderData, 0 ) - CalculateSquareCenter( renderData, 1 ) );
+			move.squareOffset = -1;
+			move.rotateCCWCount = 0;
+			move.rowOrColumn = renderData.rowOrColumn;
 
 			if( renderData.translation > 0.f )
 			{
 				if( orientation == VERTICAL )
-					manipulated = ShiftRowOrColumnBackward( renderData.rowOrColumn );
+					move.shiftDir = SHIFT_BACKWARD;
 				else if( orientation == HORIZONTAL )
-					manipulated = ShiftRowOrColumnForward( renderData.rowOrColumn );
-
-				renderData.translation -= length;
+					move.shiftDir = SHIFT_FORWARD;
 				return true;
 			}
 			else if( renderData.translation < 0.f )
 			{
 				if( orientation == VERTICAL )
-					manipulated = ShiftRowOrColumnForward( renderData.rowOrColumn );
+					move.shiftDir = SHIFT_FORWARD;
 				else if( orientation == HORIZONTAL )
-					manipulated = ShiftRowOrColumnBackward( renderData.rowOrColumn );
-
-				renderData.translation += length;
+					move.shiftDir = SHIFT_BACKWARD;
 				return true;
 			}
 		}
 	}
 
+	return false;
+}
+
+bool RubDivPuzzle::ManipulatePuzzle( const Move& move, RenderData& renderData )
+{
+	bool manipulated = false;
+
+	if( move.squareOffset != -1 )
+	{
+		for( int i = 0; i < move.rotateCCWCount; i++ )
+			if( RotateSquareMatrixCCW( move.squareOffset ) )
+				manipulated = true;
+
+		if( manipulated )
+		{
+			NormalizeAngle( renderData.rotationAngle );
+			renderData.rotationAngle -= M_PI / 2.f * float( move.rotateCCWCount );
+		}
+	}
+	else if( move.rowOrColumn != -1 )
+	{
+		switch( move.shiftDir )
+		{
+			case SHIFT_FORWARD:
+			{
+				manipulated = ShiftRowOrColumnForward( move.rowOrColumn );
+				break;
+			}
+			case SHIFT_BACKWARD:
+			{
+				manipulated = ShiftRowOrColumnBackward( move.rowOrColumn );
+				break;
+			}
+		}
+
+		if( manipulated )
+		{
+			float length = c3ga::norm( CalculateSquareCenter( renderData, 0 ) - CalculateSquareCenter( renderData, 1 ) );
+			if( renderData.translation > 0.f )
+				renderData.translation -= length;
+			else if( renderData.translation < 0.f )
+				renderData.translation += length;
+		}
+	}
+
 	return manipulated;
+}
+
+bool RubDivPuzzle::Move::IsValid( void ) const
+{
+	if( squareOffset != -1 && rowOrColumn != -1 )
+		return false;
+	if( squareOffset == -1 && rowOrColumn == -1 )
+		return false;
+	//...
+	return true;
+}
+
+void RubDivPuzzle::Move::Invert( Move& inverseMove ) const
+{
+	wxASSERT( IsValid() );
+	inverseMove = *this;
+	if( squareOffset != -1 )
+		inverseMove.rotateCCWCount = ( inverseMove.rotateCCWCount + 2 ) % 4;
+	else if( rowOrColumn != -1 )
+		inverseMove.shiftDir = ( shiftDir == SHIFT_FORWARD ? SHIFT_BACKWARD : SHIFT_FORWARD );
 }
 
 RubDivPuzzle::Orientation RubDivPuzzle::GetOrientation( void ) const

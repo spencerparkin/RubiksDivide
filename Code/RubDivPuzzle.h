@@ -5,6 +5,7 @@
 #include "c3ga/c3ga.h"
 #include <wx/glcanvas.h>
 #include <gl/gl.h>
+#include <list>
 
 class RubDivPuzzle
 {
@@ -19,6 +20,10 @@ public:
 	RubDivPuzzle( int size );
 	~RubDivPuzzle( void );
 
+	RubDivPuzzle* Clone( void ) const;
+
+	int GetSize( void ) const { return squareMatrixArray[0]->size; }
+
 	void Scramble( void );
 	void Reset( void );
 
@@ -28,6 +33,26 @@ public:
 	bool RotateSquareMatrixCCW( int squareOffset );
 	bool ShiftRowOrColumnForward( int rowOrColumn );
 	bool ShiftRowOrColumnBackward( int rowOrColumn );
+
+	enum ShiftDir
+	{
+		SHIFT_NONE,
+		SHIFT_FORWARD,
+		SHIFT_BACKWARD,
+	};
+
+	struct Move
+	{
+		int squareOffset;
+		int rotateCCWCount;
+		int rowOrColumn;
+		ShiftDir shiftDir;
+
+		bool IsValid( void ) const;
+		void Invert( Move& inverseMove ) const;
+	};
+
+	typedef std::list< Move > MoveList;
 
 	// This describtes how we render the puzzle with user-manipulation applied.
 	struct RenderData
@@ -49,7 +74,8 @@ public:
 
 	void Render( GLenum mode, const RenderData& renderData ) const;
 
-	bool ManipulatePuzzle( RenderData& renderData );
+	bool TranslateMove( const RenderData& renderData, Move& move );
+	bool ManipulatePuzzle( const Move& move, RenderData& renderData );
 
 	struct Pick
 	{
@@ -79,6 +105,8 @@ public:
 
 		Color color;
 	};
+
+	Element::Color GetColor( int squareOffset, int i, int j ) const;
 
 	class SquareMatrix
 	{

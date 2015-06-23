@@ -130,10 +130,16 @@ void RubDivCanvas::OnMouseLeftUp( wxMouseEvent& event )
 		RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
 		if( puzzle )
 		{
-			if( puzzle->ManipulatePuzzle( renderData ) )
+			RubDivPuzzle::Move move;
+			if( puzzle->TranslateMove( renderData, move ) )
 			{
-				if( puzzle->IsSolved() )
-					wxMessageBox( "You rock!", "Solved!", wxICON_EXCLAMATION );
+				if( puzzle->ManipulatePuzzle( move, renderData ) )
+				{
+					// TODO: Push the move onto a move-history list so that we can support undo/redo.
+
+					if( puzzle->IsSolved() )
+						wxMessageBox( "You rock!", "Solved!", wxICON_EXCLAMATION );
+				}
 			}
 		}
 

@@ -4,6 +4,7 @@
 #include "RubDivApp.h"
 #include "RubDivPuzzle.h"
 #include "RubDivCanvas.h"
+#include "RubDivSolver.h"
 
 #include <wx/menu.h>
 #include <wx/numdlg.h>
@@ -23,11 +24,16 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 	wxMenuItem* newPuzzleMenuItem = new wxMenuItem( puzzleMenu, ID_NewPuzzle, "New Puzzle", "Start a new puzzle." );
 	wxMenuItem* loadPuzzleMenuItem = new wxMenuItem( puzzleMenu, ID_LoadPuzzle, "Load Puzzle", "Load an old puzzle." );
 	wxMenuItem* savePuzzleMenuItem = new wxMenuItem( puzzleMenu, ID_SavePuzzle, "Save Puzzle", "Save your puzzle." );
+	wxMenuItem* scramblePuzzleMenuItem = new wxMenuItem( puzzleMenu, ID_ScramblePuzzle, "Scramble Puzzle", "Mix up the puzzle." );
+	wxMenuItem* solvePuzzleMenuItem = new wxMenuItem( puzzleMenu, ID_SolvePuzzle, "Solve Puzzle", "Show a solution sequence to the puzzle." );
 	wxMenuItem* exitMenuItem = new wxMenuItem( puzzleMenu, ID_Exit, "Exit", "Exit this program." );
 	puzzleMenu->Append( newPuzzleMenuItem );
 	puzzleMenu->AppendSeparator();
 	puzzleMenu->Append( loadPuzzleMenuItem );
 	puzzleMenu->Append( savePuzzleMenuItem );
+	puzzleMenu->AppendSeparator();
+	puzzleMenu->Append( scramblePuzzleMenuItem );
+	puzzleMenu->Append( solvePuzzleMenuItem );
 	puzzleMenu->AppendSeparator();
 	puzzleMenu->Append( exitMenuItem );
 
@@ -53,12 +59,16 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 	Bind( wxEVT_MENU, &RubDivFrame::OnNewPuzzle, this, ID_NewPuzzle );
 	Bind( wxEVT_MENU, &RubDivFrame::OnLoadPuzzle, this, ID_LoadPuzzle );
 	Bind( wxEVT_MENU, &RubDivFrame::OnSavePuzzle, this, ID_SavePuzzle );
+	Bind( wxEVT_MENU, &RubDivFrame::OnSolvePuzzle, this, ID_SolvePuzzle );
+	Bind( wxEVT_MENU, &RubDivFrame::OnScramblePuzzle, this, ID_ScramblePuzzle );
 	Bind( wxEVT_MENU, &RubDivFrame::OnExit, this, ID_Exit );
 	Bind( wxEVT_MENU, &RubDivFrame::OnAbout, this, ID_About );
 	Bind( wxEVT_MENU, &RubDivFrame::OnOrientVertical, this, ID_OrientVertical );
 	Bind( wxEVT_MENU, &RubDivFrame::OnOrientHorizontal, this, ID_OrientHorizontal );
 	Bind( wxEVT_UPDATE_UI, &RubDivFrame::OnUpdateMenuItemUI, this, ID_OrientVertical );
 	Bind( wxEVT_UPDATE_UI, &RubDivFrame::OnUpdateMenuItemUI, this, ID_OrientHorizontal );
+	Bind( wxEVT_UPDATE_UI, &RubDivFrame::OnUpdateMenuItemUI, this, ID_SolvePuzzle );
+	Bind( wxEVT_UPDATE_UI, &RubDivFrame::OnUpdateMenuItemUI, this, ID_ScramblePuzzle );
 	Bind( wxEVT_TIMER, &RubDivFrame::OnTimer, this, ID_Timer );
 
 	timer.Start(1);
@@ -78,8 +88,41 @@ void RubDivFrame::OnNewPuzzle( wxCommandEvent& event )
 	wxGetApp().SetPuzzle( puzzle );
 
 	puzzle->Scramble();
-
 	canvas->Refresh();
+}
+
+void RubDivFrame::OnScramblePuzzle( wxCommandEvent& event )
+{
+	RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
+	if( puzzle )
+	{
+		puzzle->Scramble();
+		canvas->Refresh();
+	}
+}
+
+void RubDivFrame::OnSolvePuzzle( wxCommandEvent& event )
+{
+	RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
+	if( puzzle )
+	{
+		if( !puzzle->GetOrientation() == RubDivPuzzle::VERTICAL )
+		{
+			if( !puzzle->SetOrientation( RubDivPuzzle::VERTICAL ) )
+			{
+				wxMessageBox( "Please center the puzzle before asking me to solve it.  Sorry.", "Oops!", wxICON_EXCLAMATION );
+				return;
+			}
+		}
+
+		//RubDivSolver solver;
+		//RubDivPuzzle::MoveList moveList;
+		//bool solved = solver.Solve( puzzle, moveList );
+		//wxASSERT( solved );
+		// TODO: Do something with the move list.
+
+		canvas->Refresh();
+	}
 }
 
 void RubDivFrame::OnLoadPuzzle( wxCommandEvent& event )
@@ -135,6 +178,22 @@ void RubDivFrame::OnUpdateMenuItemUI( wxUpdateUIEvent& event )
 
 	switch( event.GetId() )
 	{
+		case ID_SolvePuzzle:
+		{
+			if( !puzzle )
+				event.Enable( false );
+			else
+				event.Enable( !puzzle->IsSolved() );
+			break;
+		}
+		case ID_ScramblePuzzle:
+		{
+			if( !puzzle )
+				event.Enable( false );
+			else
+				event.Enable( true );
+			break;
+		}
 		case ID_OrientVertical:
 		{
 			if( !puzzle )
