@@ -121,6 +121,9 @@ public:
 
 	static int RandomInteger( int min, int max );
 	static void ShuffleArray( int* array, int arraySize );
+	static void NormalizeAngle( float& angle );
+
+	c3ga::vectorE2GA CalculateSquareCenter( const RenderData& renderData, int squareOffset ) const;
 
 private:
 

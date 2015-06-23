@@ -111,6 +111,9 @@ void RubDivCanvas::OnMouseLeftDown( wxMouseEvent& event )
 	RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
 	if( puzzle )
 	{
+		renderData.rowOrColumn = -1;
+		renderData.squareOffset = -1;
+
 		mousePos = event.GetPosition();
 		Render( GL_SELECT, &mousePos, &pick );
 		if( pick.squareOffset != -1 )
@@ -127,10 +130,11 @@ void RubDivCanvas::OnMouseLeftUp( wxMouseEvent& event )
 		RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
 		if( puzzle )
 		{
-			puzzle->ManipulatePuzzle( renderData );
-
-			if( puzzle->IsSolved() )
-				wxMessageBox( "You rock!", "Solved!", wxICON_EXCLAMATION );
+			if( puzzle->ManipulatePuzzle( renderData ) )
+			{
+				if( puzzle->IsSolved() )
+					wxMessageBox( "You rock!", "Solved!", wxICON_EXCLAMATION );
+			}
 		}
 
 		pick.squareOffset = -1;
@@ -196,34 +200,52 @@ void RubDivCanvas::OnMouseCaptureLost( wxMouseCaptureLostEvent& event )
 	pick.squareOffset = -1;
 }
 
+// TODO: We really should be animating in a frame-rate independent way here.
 bool RubDivCanvas::Animate( void )
 {
+	const float eps = 1e-2f;
+	const float lerp = 0.8f;
+
 	if( pick.squareOffset == -1 )
 	{
 		if( renderData.squareOffset != -1 )
 		{
-			// TODO: Fix this...we need to go towords the nearest multiple of 2pi.
-			if( renderData.rotationAngle == 0.f )
+			RubDivPuzzle::NormalizeAngle( renderData.rotationAngle );
+
+			if( renderData.rotationAngle == 0.f || renderData.rotationAngle == 2.f * float( M_PI ) )
 				renderData.squareOffset = -1;
-			else if( fabs( renderData.rotationAngle ) >= 1e-5f )
-				renderData.rotationAngle *= 0.8f;
 			else
-				renderData.rotationAngle = 0.f;
+			{
+				if( fabs( renderData.rotationAngle ) < fabs( renderData.rotationAngle - 2.f * float( M_PI ) ) )
+				{
+					if( fabs( renderData.rotationAngle ) < eps )
+						renderData.rotationAngle = 0.f;
+					else
+						renderData.rotationAngle *= lerp;
+				}
+				else
+				{
+					if( fabs( renderData.rotationAngle - 2.f * float( M_PI ) ) < eps )
+						renderData.rotationAngle = 2.f * float( M_PI );
+					else
+						renderData.rotationAngle = renderData.rotationAngle + ( 1.f - lerp ) * ( 2.f * float( M_PI ) - renderData.rotationAngle );
+				}
+			}
 			return true;
 		}
 		else if( renderData.rowOrColumn != -1 )
 		{
 			if( renderData.translation == 0.f )
 				renderData.rowOrColumn = -1;
-			else if( fabs( renderData.translation ) >= 1e-5f )
-				renderData.translation *= 0.8f;
+			else if( fabs( renderData.translation ) >= eps )
+				renderData.translation *= lerp;
 			else
 				renderData.translation = 0.f;
 			return true;
 		}
 	}
 
-	wxString text = wxString::Format( "rotAgl: %1.2f degs; trans: %1.2f units", renderData.rotationAngle * 180.f / 3.1415926536f, renderData.translation );
+	wxString text = wxString::Format( "rotAgl: %1.2f degs; trans: %1.2f units", renderData.rotationAngle * 180.f / float( M_PI ), renderData.translation );
 	wxGetApp().GetFrame()->GetStatusBar()->SetStatusText( text );
 
 	return false;

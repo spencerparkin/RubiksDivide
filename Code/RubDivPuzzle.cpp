@@ -310,26 +310,51 @@ float RubDivPuzzle::CalculateSquareSize( const RenderData& renderData, float& wi
 	return squareSize;
 }
 
+c3ga::vectorE2GA RubDivPuzzle::CalculateSquareCenter( const RenderData& renderData, int squareOffset ) const
+{
+	float width, height;
+	float squareSize = CalculateSquareSize( renderData, width, height );
+
+	c3ga::vectorE2GA squareCenter( c3ga::vectorE2GA::coord_e1_e2, 0.f, 0.f );
+
+	switch( orientation )
+	{
+		case VERTICAL:
+		{
+			squareCenter.set( c3ga::vectorE2GA::coord_e1_e2, renderData.xMin + width / 2.f, renderData.yMax - squareSize * sqrt( 2.f ) / 2.f );
+			squareCenter.m_e2 -= float( squareOffset ) * squareSize * ( sqrt( 2.f ) + 1.f ) / 2.f;
+			break;
+		}
+		case HORIZONTAL:
+		{
+			squareCenter.set( c3ga::vectorE2GA::coord_e1_e2, renderData.xMin + squareSize * sqrt( 2.f ) / 2.f, renderData.yMin + height / 2.f );
+			squareCenter.m_e1 += float( squareOffset ) * squareSize * ( sqrt( 2.f ) + 1.f ) / 2.f;
+			break;
+		}
+	}
+	
+	return squareCenter;
+}
+
 void RubDivPuzzle::Render( GLenum mode, const RenderData& renderData ) const
 {
 	float width, height;
 	float squareSize = CalculateSquareSize( renderData, width, height );
 
-	c3ga::vectorE2GA squareCenter;
-	if( orientation == VERTICAL )
-		squareCenter.set( c3ga::vectorE2GA::coord_e1_e2, renderData.xMin + width / 2.f, renderData.yMax - squareSize * sqrt( 2.f ) / 2.f );
-	else if( orientation == HORIZONTAL )
-		squareCenter.set( c3ga::vectorE2GA::coord_e1_e2, renderData.xMin + squareSize * sqrt( 2.f ) / 2.f, renderData.yMin + height / 2.f );
-
 	for( int i = 0; i < SQUARE_MATRIX_COUNT; i++ )
 	{
+		c3ga::vectorE2GA squareCenter = CalculateSquareCenter( renderData, i );
 		squareMatrixArray[i]->Render( mode, renderData, squareCenter, squareSize, i, this );
-
-		if( orientation == VERTICAL )
-			squareCenter.m_e2 -= squareSize * ( sqrt( 2.f ) + 1.f ) / 2.f;
-		else if( orientation == HORIZONTAL )
-			squareCenter.m_e1 += squareSize * ( sqrt( 2.f ) + 1.f ) / 2.f;
 	}
+}
+
+/*static*/ void RubDivPuzzle::NormalizeAngle( float& angle )
+{
+	while( angle >= 2.f * M_PI )
+		angle -= 2.f * float( M_PI );
+
+	while( angle < 0.f )
+		angle += 2.f * float( M_PI );
 }
 
 bool RubDivPuzzle::ManipulatePuzzle( RenderData& renderData )
@@ -341,20 +366,14 @@ bool RubDivPuzzle::ManipulatePuzzle( RenderData& renderData )
 
 	if( renderData.squareOffset != -1 )
 	{
-		const float pi = 3.1415926536f;
-
-		while( renderData.rotationAngle >= 2.f * pi )
-			renderData.rotationAngle -= 2.f * pi;
-
-		while( renderData.rotationAngle < 0.f )
-			renderData.rotationAngle += 2.f * pi;
+		NormalizeAngle( renderData.rotationAngle );
 
 		int rotationCount = 0;
-		if( pi / 4.f <= renderData.rotationAngle && renderData.rotationAngle < 3.f * pi / 4.f )
+		if( M_PI / 4.f <= renderData.rotationAngle && renderData.rotationAngle < 3.f * M_PI / 4.f )
 			rotationCount = 1;
-		else if( 3.f * pi / 4.f <= renderData.rotationAngle && renderData.rotationAngle < 5.f * pi / 4.f )
+		else if( 3.f * M_PI / 4.f <= renderData.rotationAngle && renderData.rotationAngle < 5.f * M_PI / 4.f )
 			rotationCount = 2;
-		else if( 5.f * pi / 4.f <= renderData.rotationAngle && renderData.rotationAngle < 7.f * pi / 4.f )
+		else if( 5.f * M_PI / 4.f <= renderData.rotationAngle && renderData.rotationAngle < 7.f * M_PI / 4.f )
 			rotationCount = 3;
 
 		for( int i = 0; i < rotationCount; i++ )
@@ -362,15 +381,14 @@ bool RubDivPuzzle::ManipulatePuzzle( RenderData& renderData )
 				manipulated = true;
 
 		if( manipulated )
-		{
-			//tmp...
-			renderData.rotationAngle = 0.f;
-		}
+			renderData.rotationAngle -= M_PI / 2.f * float( rotationCount );
 	}
 	else if( renderData.rowOrColumn != -1 )
 	{
 		if( fabs( renderData.translation ) > squareSize / 2.f )
 		{
+			float length = c3ga::norm( CalculateSquareCenter( renderData, 0 ) - CalculateSquareCenter( renderData, 1 ) );
+
 			if( renderData.translation > 0.f )
 			{
 				if( orientation == VERTICAL )
@@ -378,8 +396,7 @@ bool RubDivPuzzle::ManipulatePuzzle( RenderData& renderData )
 				else if( orientation == HORIZONTAL )
 					manipulated = ShiftRowOrColumnForward( renderData.rowOrColumn );
 
-				//tmp...
-				renderData.translation = 0.f;
+				renderData.translation -= length;
 				return true;
 			}
 			else if( renderData.translation < 0.f )
@@ -389,8 +406,7 @@ bool RubDivPuzzle::ManipulatePuzzle( RenderData& renderData )
 				else if( orientation == HORIZONTAL )
 					manipulated = ShiftRowOrColumnBackward( renderData.rowOrColumn );
 
-				//tmp...
-				renderData.translation = 0.f;
+				renderData.translation += length;
 				return true;
 			}
 		}
