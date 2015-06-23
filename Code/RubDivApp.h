@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "RubDivPuzzle.h"
+
 #include <wx/app.h>
 
 class RubDivPuzzle;
@@ -22,11 +24,23 @@ public:
 
 	RubDivFrame* GetFrame( void ) { return frame; }
 
+	void EnqueueMove( const RubDivPuzzle::Move& move );
+	bool ProcessMoveQueue( RubDivPuzzle::RenderData& renderData );
+	void AddHistory( const RubDivPuzzle::Move& move );
+	bool GetMoveForUndo( RubDivPuzzle::Move& move );
+	bool GetMoveForRedo( RubDivPuzzle::Move& move );
+	bool CanUndo( void );
+	bool CanRedo( void );
+
 private:
 
 	RubDivPuzzle* puzzle;
 
 	RubDivFrame* frame;
+
+	RubDivPuzzle::MoveList moveQueue;
+	RubDivPuzzle::MoveList moveHistory;
+	RubDivPuzzle::MoveList::iterator historyIter;
 };
 
 wxDECLARE_APP( RubDivApp );

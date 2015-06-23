@@ -135,8 +135,8 @@ void RubDivCanvas::OnMouseLeftUp( wxMouseEvent& event )
 			{
 				if( puzzle->ManipulatePuzzle( move, renderData ) )
 				{
-					// TODO: Push the move onto a move-history list so that we can support undo/redo.
-
+					wxGetApp().AddHistory( move );
+					
 					if( puzzle->IsSolved() )
 						wxMessageBox( "You rock!", "Solved!", wxICON_EXCLAMATION );
 				}
@@ -226,8 +226,6 @@ void RubDivCanvas::OnMouseCaptureLost( wxMouseCaptureLostEvent& event )
 // TODO: We really should be animating in a frame-rate independent way here.
 bool RubDivCanvas::Animate( void )
 {
-	// TODO: Own a move-list.  Animate/apply it while non-empty.
-
 	const float eps = 1e-2f;
 	const float lerp = 0.8f;
 
@@ -267,6 +265,11 @@ bool RubDivCanvas::Animate( void )
 			else
 				renderData.translation = 0.f;
 			return true;
+		}
+		else
+		{
+			if( wxGetApp().ProcessMoveQueue( renderData ) )
+				return true;
 		}
 	}
 

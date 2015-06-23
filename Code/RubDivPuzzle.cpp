@@ -477,10 +477,10 @@ bool RubDivPuzzle::ManipulatePuzzle( const Move& move, RenderData& renderData )
 		if( manipulated )
 		{
 			float length = c3ga::norm( CalculateSquareCenter( renderData, 0 ) - CalculateSquareCenter( renderData, 1 ) );
-			if( renderData.translation > 0.f )
-				renderData.translation -= length;
-			else if( renderData.translation < 0.f )
+			if( move.shiftDir == SHIFT_FORWARD )
 				renderData.translation += length;
+			else if( move.shiftDir == SHIFT_BACKWARD )
+				renderData.translation -= length;
 		}
 	}
 

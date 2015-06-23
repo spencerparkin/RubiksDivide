@@ -26,6 +26,8 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 	wxMenuItem* savePuzzleMenuItem = new wxMenuItem( puzzleMenu, ID_SavePuzzle, "Save Puzzle", "Save your puzzle." );
 	wxMenuItem* scramblePuzzleMenuItem = new wxMenuItem( puzzleMenu, ID_ScramblePuzzle, "Scramble Puzzle", "Mix up the puzzle." );
 	wxMenuItem* solvePuzzleMenuItem = new wxMenuItem( puzzleMenu, ID_SolvePuzzle, "Solve Puzzle", "Show a solution sequence to the puzzle." );
+	wxMenuItem* undoMenuItem = new wxMenuItem( puzzleMenu, ID_Undo, "Undo", "Undo your last move." );
+	wxMenuItem* redoMenuItem = new wxMenuItem( puzzleMenu, ID_Redo, "Redo", "Redo your last move." );
 	wxMenuItem* exitMenuItem = new wxMenuItem( puzzleMenu, ID_Exit, "Exit", "Exit this program." );
 	puzzleMenu->Append( newPuzzleMenuItem );
 	puzzleMenu->AppendSeparator();
@@ -34,6 +36,9 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 	puzzleMenu->AppendSeparator();
 	puzzleMenu->Append( scramblePuzzleMenuItem );
 	puzzleMenu->Append( solvePuzzleMenuItem );
+	puzzleMenu->AppendSeparator();
+	puzzleMenu->Append( undoMenuItem );
+	puzzleMenu->Append( redoMenuItem );
 	puzzleMenu->AppendSeparator();
 	puzzleMenu->Append( exitMenuItem );
 
@@ -61,6 +66,8 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 	Bind( wxEVT_MENU, &RubDivFrame::OnSavePuzzle, this, ID_SavePuzzle );
 	Bind( wxEVT_MENU, &RubDivFrame::OnSolvePuzzle, this, ID_SolvePuzzle );
 	Bind( wxEVT_MENU, &RubDivFrame::OnScramblePuzzle, this, ID_ScramblePuzzle );
+	Bind( wxEVT_MENU, &RubDivFrame::OnUndo, this, ID_Undo );
+	Bind( wxEVT_MENU, &RubDivFrame::OnRedo, this, ID_Redo );
 	Bind( wxEVT_MENU, &RubDivFrame::OnExit, this, ID_Exit );
 	Bind( wxEVT_MENU, &RubDivFrame::OnAbout, this, ID_About );
 	Bind( wxEVT_MENU, &RubDivFrame::OnOrientVertical, this, ID_OrientVertical );
@@ -69,7 +76,11 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 	Bind( wxEVT_UPDATE_UI, &RubDivFrame::OnUpdateMenuItemUI, this, ID_OrientHorizontal );
 	Bind( wxEVT_UPDATE_UI, &RubDivFrame::OnUpdateMenuItemUI, this, ID_SolvePuzzle );
 	Bind( wxEVT_UPDATE_UI, &RubDivFrame::OnUpdateMenuItemUI, this, ID_ScramblePuzzle );
+	Bind( wxEVT_UPDATE_UI, &RubDivFrame::OnUpdateMenuItemUI, this, ID_Undo );
+	Bind( wxEVT_UPDATE_UI, &RubDivFrame::OnUpdateMenuItemUI, this, ID_Redo );
 	Bind( wxEVT_TIMER, &RubDivFrame::OnTimer, this, ID_Timer );
+
+	// TODO: Add Ctrl+Z and Ctrl+Y accelerators here for undo/redo.
 
 	timer.Start(1);
 }
@@ -119,10 +130,24 @@ void RubDivFrame::OnSolvePuzzle( wxCommandEvent& event )
 		//RubDivPuzzle::MoveList moveList;
 		//bool solved = solver.Solve( puzzle, moveList );
 		//wxASSERT( solved );
-		// TODO: Do something with the move list.
+		// TODO: Add solution move-list to the app's move queue.
 
 		canvas->Refresh();
 	}
+}
+
+void RubDivFrame::OnUndo( wxCommandEvent& event )
+{
+	RubDivPuzzle::Move move;
+	if( wxGetApp().GetMoveForUndo( move ) )
+		wxGetApp().EnqueueMove( move );
+}
+
+void RubDivFrame::OnRedo( wxCommandEvent& event )
+{
+	RubDivPuzzle::Move move;
+	if( wxGetApp().GetMoveForRedo( move ) )
+		wxGetApp().EnqueueMove( move );
 }
 
 void RubDivFrame::OnLoadPuzzle( wxCommandEvent& event )
@@ -178,6 +203,16 @@ void RubDivFrame::OnUpdateMenuItemUI( wxUpdateUIEvent& event )
 
 	switch( event.GetId() )
 	{
+		case ID_Undo:
+		{
+			event.Enable( wxGetApp().CanUndo() );
+			break;
+		}
+		case ID_Redo:
+		{
+			event.Enable( wxGetApp().CanRedo() );
+			break;
+		}
 		case ID_SolvePuzzle:
 		{
 			if( !puzzle )

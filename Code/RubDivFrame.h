@@ -9,7 +9,6 @@
 class RubDivCanvas;
 
 // TODO: Expose A/B colors.
-// TODO: Add scramble option.
 
 class RubDivFrame : public wxFrame
 {
@@ -32,6 +31,8 @@ private:
 		ID_OrientVertical,
 		ID_OrientHorizontal,
 		ID_Timer,
+		ID_Undo,
+		ID_Redo,
 	};
 
 	void OnNewPuzzle( wxCommandEvent& event );
@@ -39,6 +40,8 @@ private:
 	void OnSavePuzzle( wxCommandEvent& event );
 	void OnScramblePuzzle( wxCommandEvent& event );
 	void OnSolvePuzzle( wxCommandEvent& event );
+	void OnUndo( wxCommandEvent& event );
+	void OnRedo( wxCommandEvent& event );
 	void OnExit( wxCommandEvent& event );
 	void OnAbout( wxCommandEvent& event );
 	void OnOrientVertical( wxCommandEvent& event );
