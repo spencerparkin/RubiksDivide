@@ -203,6 +203,8 @@ void RubDivCanvas::OnMouseCaptureLost( wxMouseCaptureLostEvent& event )
 // TODO: We really should be animating in a frame-rate independent way here.
 bool RubDivCanvas::Animate( void )
 {
+	// TODO: Own a move-list.  Animate/apply it while non-empty.
+
 	const float eps = 1e-2f;
 	const float lerp = 0.8f;
 
