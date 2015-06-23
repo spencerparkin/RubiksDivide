@@ -141,6 +141,23 @@ void RubDivCanvas::OnMouseLeftUp( wxMouseEvent& event )
 	}
 }
 
+void RubDivCanvas::RotateWithMouse( RubDivPuzzle* puzzle, const wxPoint& newMousePos )
+{
+	c3ga::vectorE2GA squareCenter = puzzle->CalculateSquareCenter( renderData, pick.squareOffset );
+	c3ga::vectorE2GA originalMousePos( c3ga::vectorE2GA::coord_e1_e2, mousePos.x, renderData.yMax - mousePos.y );
+	c3ga::vectorE2GA currentMousePos( c3ga::vectorE2GA::coord_e1_e2, newMousePos.x, renderData.yMax - newMousePos.y );
+
+	c3ga::vectorE2GA originalMouseVec = originalMousePos - squareCenter;
+	c3ga::vectorE2GA currentMouseVec = currentMousePos - squareCenter;
+	float angle = acos( c3ga::lc( c3ga::unit( originalMouseVec ), c3ga::unit( currentMouseVec ) ) );
+	
+	c3ga::bivectorE2GA bivec = c3ga::op( originalMouseVec, currentMouseVec );
+	if( bivec.get_e1_e2() > 0.f )
+		renderData.rotationAngle = angle;
+	else
+		renderData.rotationAngle = -angle;
+}
+
 void RubDivCanvas::OnMouseMotion( wxMouseEvent& event )
 {
 	RubDivPuzzle* puzzle = wxGetApp().GetPuzzle();
@@ -167,7 +184,7 @@ void RubDivCanvas::OnMouseMotion( wxMouseEvent& event )
 					if( renderData.rowOrColumn != -1 )
 						renderData.translation = -float( mouseDelta.y );
 					else if( renderData.squareOffset != -1 )
-						renderData.rotationAngle = float( mouseDelta.x ) / 64.f;
+						RotateWithMouse( puzzle, event.GetPosition() );
 
 					break;
 				}
@@ -184,7 +201,7 @@ void RubDivCanvas::OnMouseMotion( wxMouseEvent& event )
 					if( renderData.rowOrColumn != -1 )
 						renderData.translation = float( mouseDelta.x );
 					else if( renderData.squareOffset != -1 )
-						renderData.rotationAngle = -float( mouseDelta.y ) / 64.f;
+						RotateWithMouse( puzzle, event.GetPosition() );
 
 					break;
 				}

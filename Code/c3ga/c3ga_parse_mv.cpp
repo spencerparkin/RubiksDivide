@@ -32,10 +32,10 @@ DEALINGS IN THE SOFTWARE.
 #include <ctype.h>
 #include "c3ga.h"
 
-#ifdef WIN32
+//#ifdef WIN32
 #define snprintf _snprintf
 #pragma warning(disable:4996) /* quit your whining already */
-#endif /* WIN32 */
+//#endif /* WIN32 */
 
 namespace c3ga {
 

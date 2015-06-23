@@ -67,8 +67,6 @@ DEALINGS IN THE SOFTWARE.
 #ifndef _C3GA_H_
 #define _C3GA_H_
 
-#define snprintf _snprintf
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7691,6 +7689,14 @@ vectorE3GA lc(const vectorE3GA &a, const bivectorE3GA &b);
 double rc(const vectorE3GA &a, const vectorE3GA &b);
 /// Returns right contraction of bivectorE3GA and vectorE3GA.
 vectorE3GA rc(const bivectorE3GA &a, const vectorE3GA &b);
+/// Returns left contraction of vectorE2GA and vectorE2GA.
+double lc(const vectorE2GA &a, const vectorE2GA &b);
+/// Returns left contraction of vectorE2GA and bivectorE2GA.
+vectorE2GA lc(const vectorE2GA &a, const bivectorE2GA &b);
+/// Returns right contraction of vectorE2GA and vectorE2GA.
+double rc(const vectorE2GA &a, const vectorE2GA &b);
+/// Returns right contraction of bivectorE2GA and vectorE2GA.
+vectorE2GA rc(const bivectorE2GA &a, const vectorE2GA &b);
 /// Returns left contraction of bivectorE3GA and trivectorE3GA.
 vectorE3GA lc(const bivectorE3GA &a, const trivectorE3GA &b);
 /// Returns right contraction of trivectorE3GA and bivectorE3GA.
@@ -7973,6 +7979,8 @@ double norm2_em(const e1_t &a);
 double norm2_em_returns_scalar(const e1_t &a);
 /// Returns outer product of mv and mv.
 mv op(const mv &a, const mv &b);
+/// Returns outer product of vectorE2GA and vectorE2GA.
+bivectorE2GA op(const vectorE2GA &a, const vectorE2GA &b);
 /// Returns outer product of vectorE3GA and vectorE3GA.
 bivectorE3GA op(const vectorE3GA &a, const vectorE3GA &b);
 /// Returns outer product of rotorE3GA and vectorE3GA.
@@ -8185,6 +8193,8 @@ dualPlane gradeInvolution(const ni_t &a);
 trivectorE3GA gradeInvolution(const I3_t &a);
 /// Returns unit of mv using default metric.
 mv unit(const mv &a);
+/// Returns unit of vectorE2GA using default metric.
+vectorE2GA unit(const vectorE2GA &a);
 /// Returns unit of vectorE3GA using default metric.
 vectorE3GA unit(const vectorE3GA &a);
 /// Returns unit of bivectorE3GA using default metric.
@@ -8640,6 +8650,26 @@ inline vectorE3GA operator>>(const bivectorE3GA &a, const vectorE3GA &b) {
 	return rc(a, b);
 }
 /// returns lc(a, b)
+inline double operator<<(const vectorE2GA &a, const vectorE2GA &b) {
+	return lc(a, b);
+}
+/// returns lc(a, b)
+inline vectorE2GA operator<<(const vectorE2GA &a, const bivectorE2GA &b) {
+	return lc(a, b);
+}
+/// returns (a = lc(a, b))
+inline vectorE2GA &operator<<=(vectorE2GA &a, const bivectorE2GA &b) {
+	return (a = lc(a, b));
+}
+/// returns rc(a, b)
+inline double operator>>(const vectorE2GA &a, const vectorE2GA &b) {
+	return rc(a, b);
+}
+/// returns rc(a, b)
+inline vectorE2GA operator>>(const bivectorE2GA &a, const vectorE2GA &b) {
+	return rc(a, b);
+}
+/// returns lc(a, b)
 inline vectorE3GA operator<<(const bivectorE3GA &a, const trivectorE3GA &b) {
 	return lc(a, b);
 }
@@ -8770,6 +8800,10 @@ inline mv operator^(const mv &a, const mv &b) {
 /// returns (a = op(a, b))
 inline mv &operator^=(mv &a, const mv &b) {
 	return (a = op(a, b));
+}
+/// returns op(a, b)
+inline bivectorE2GA operator^(const vectorE2GA &a, const vectorE2GA &b) {
+	return op(a, b);
 }
 /// returns op(a, b)
 inline bivectorE3GA operator^(const vectorE3GA &a, const vectorE3GA &b) {
@@ -15817,6 +15851,32 @@ inline vectorE3GA rc(const bivectorE3GA &a, const vectorE3GA &b)
 		);
 
 }
+inline double lc(const vectorE2GA &a, const vectorE2GA &b)
+{
+	return (a.m_e1*b.m_e1+a.m_e2*b.m_e2);
+
+}
+inline vectorE2GA lc(const vectorE2GA &a, const bivectorE2GA &b)
+{
+	return vectorE2GA(vectorE2GA::coord_e1_e2,
+			-a.m_e2*b.m_e1_e2, // e1
+			a.m_e1*b.m_e1_e2 // e2
+		);
+
+}
+inline double rc(const vectorE2GA &a, const vectorE2GA &b)
+{
+	return (a.m_e1*b.m_e1+a.m_e2*b.m_e2);
+
+}
+inline vectorE2GA rc(const bivectorE2GA &a, const vectorE2GA &b)
+{
+	return vectorE2GA(vectorE2GA::coord_e1_e2,
+			a.m_e1_e2*b.m_e2, // e1
+			-a.m_e1_e2*b.m_e1 // e2
+		);
+
+}
 inline vectorE3GA lc(const bivectorE3GA &a, const trivectorE3GA &b)
 {
 	return vectorE3GA(vectorE3GA::coord_e1_e2_e3,
@@ -16594,6 +16654,13 @@ inline double norm2_em(const e1_t &a)
 }
 inline double norm2_em_returns_scalar(const e1_t &a) {
 	return norm2_em(a);
+}
+inline bivectorE2GA op(const vectorE2GA &a, const vectorE2GA &b)
+{
+	return bivectorE2GA(bivectorE2GA::coord_e1e2,
+			(a.m_e1*b.m_e2-a.m_e2*b.m_e1) // e1_e2
+		);
+
 }
 inline bivectorE3GA op(const vectorE3GA &a, const vectorE3GA &b)
 {
@@ -17526,6 +17593,15 @@ inline trivectorE3GA gradeInvolution(const I3_t &a)
 			-1.0 // e1_e2_e3
 		);
 
+}
+inline vectorE2GA unit(const vectorE2GA &a)
+{
+	double _n_ = ::sqrt(::fabs((a.m_e1*a.m_e1+a.m_e2*a.m_e2)));
+
+	return vectorE2GA(vectorE2GA::coord_e1_e2,
+			a.m_e1/((_n_)), // e1
+			a.m_e2/((_n_)) // e2
+		);
 }
 inline vectorE3GA unit(const vectorE3GA &a)
 {

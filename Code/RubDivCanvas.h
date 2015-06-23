@@ -19,6 +19,7 @@ private:
 
 	void BindContext( void );
 	void Render( GLenum mode, const wxPoint* mousePos = 0, RubDivPuzzle::Pick* pick = 0 );
+	void RotateWithMouse( RubDivPuzzle* puzzle, const wxPoint& newMousePos );
 
 	void OnPaint( wxPaintEvent& event );
 	void OnSize( wxSizeEvent& event );

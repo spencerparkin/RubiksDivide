@@ -31,6 +31,8 @@ DEALINGS IN THE SOFTWARE.
 #include <utility> // for std::swap
 #include <time.h> /* used to seed random generator */
 #include "c3ga.h"
+#define snprintf _snprintf
+#pragma warning(disable:4996) /* quit your whining already */
 namespace c3ga {
 
 const int c3ga_spaceDim = 5;

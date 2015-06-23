@@ -473,6 +473,11 @@ memAlloc="full">
   <function name="lc" arg1="vectorE3GA" arg2="bivectorE3GA"/>
   <function name="rc" arg1="vectorE3GA" arg2="vectorE3GA"/>
   <function name="rc" arg1="bivectorE3GA" arg2="vectorE3GA"/>
+
+  <function name="lc" arg1="vectorE2GA" arg2="vectorE2GA"/>
+  <function name="lc" arg1="vectorE2GA" arg2="bivectorE2GA"/>
+  <function name="rc" arg1="vectorE2GA" arg2="vectorE2GA"/>
+  <function name="rc" arg1="bivectorE2GA" arg2="vectorE2GA"/>
   
   <function name="lc" arg1="bivectorE3GA" arg2="trivectorE3GA"/>
   <function name="rc" arg1="trivectorE3GA" arg2="bivectorE3GA"/>
@@ -583,7 +588,7 @@ memAlloc="full">
   <function name="norm2" outputName="norm2_em" arg1="e1" metric="euclidean"/>
   
   <function name="op" arg1="mv" arg2="mv"/>
-  
+  <function name="op" arg1="vectorE2GA" arg2="vectorE2GA"/>
   <function name="op" arg1="vectorE3GA" arg2="vectorE3GA"/>
   <function name="op" arg1="rotorE3GA" arg2="vectorE3GA"/>
   <function name="op" arg1="vectorE3GA" arg2="line"/>
@@ -693,6 +698,7 @@ memAlloc="full">
 
     
   <function name="unit" arg1="mv"/>
+  <function name="unit" arg1="vectorE2GA"/>
   <function name="unit" arg1="vectorE3GA"/>
   <function name="unit" arg1="bivectorE3GA"/>
   <function name="unit" arg1="line"/>
