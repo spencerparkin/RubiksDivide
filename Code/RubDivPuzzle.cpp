@@ -504,7 +504,7 @@ void RubDivPuzzle::Move::Invert( Move& inverseMove ) const
 	wxASSERT( IsValid() );
 	inverseMove = *this;
 	if( squareOffset != -1 )
-		inverseMove.rotateCCWCount = ( inverseMove.rotateCCWCount + 2 ) % 4;
+		inverseMove.rotateCCWCount = ( rotateCCWCount == 2 ) ? 2 : ( ( rotateCCWCount + 2 ) % 4 );
 	else if( rowOrColumn != -1 )
 		inverseMove.shiftDir = ( shiftDir == SHIFT_FORWARD ? SHIFT_BACKWARD : SHIFT_FORWARD );
 }

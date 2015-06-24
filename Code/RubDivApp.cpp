@@ -78,18 +78,23 @@ bool RubDivApp::ProcessMoveQueue( RubDivPuzzle::RenderData& renderData )
 
 void RubDivApp::AddHistory( const RubDivPuzzle::Move& move )
 {
-	while( true )
+	if( moveHistory.size() > 0 && historyIter == moveHistory.end() )
+		moveHistory.clear();
+	else
 	{
-		RubDivPuzzle::MoveList::iterator iter = historyIter;
-		if( iter == moveHistory.end() )
-			break;
-		
-		iter++;
-		if( iter == moveHistory.end() )
-			break;
+		while( true )
+		{
+			RubDivPuzzle::MoveList::iterator iter = historyIter;
+			if( iter == moveHistory.end() )
+				break;
+			
+			iter++;
+			if( iter == moveHistory.end() )
+				break;
 
-		moveHistory.erase( iter );
-	}	
+			moveHistory.erase( iter );
+		}
+	}
 	
 	moveHistory.push_back( move );
 
@@ -97,6 +102,10 @@ void RubDivApp::AddHistory( const RubDivPuzzle::Move& move )
 		historyIter = moveHistory.begin();
 	else
 		historyIter++;
+
+	RubDivPuzzle::MoveList::iterator iter = historyIter;
+	iter++;
+	wxASSERT( iter == moveHistory.end() );
 }
 
 bool RubDivApp::GetMoveForUndo( RubDivPuzzle::Move& move )
