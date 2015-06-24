@@ -477,9 +477,9 @@ bool RubDivPuzzle::ManipulatePuzzle( const Move& move, RenderData& renderData )
 		if( manipulated )
 		{
 			float length = c3ga::norm( CalculateSquareCenter( renderData, 0 ) - CalculateSquareCenter( renderData, 1 ) );
-			if( move.shiftDir == SHIFT_FORWARD )
+			if( orientation == VERTICAL && move.shiftDir == SHIFT_FORWARD || orientation == HORIZONTAL && move.shiftDir == SHIFT_BACKWARD )
 				renderData.translation += length;
-			else if( move.shiftDir == SHIFT_BACKWARD )
+			else if( orientation == VERTICAL && move.shiftDir == SHIFT_BACKWARD || orientation == HORIZONTAL && move.shiftDir == SHIFT_FORWARD )
 				renderData.translation -= length;
 		}
 	}
