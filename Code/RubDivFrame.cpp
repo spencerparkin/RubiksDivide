@@ -26,8 +26,8 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 	wxMenuItem* savePuzzleMenuItem = new wxMenuItem( puzzleMenu, ID_SavePuzzle, "Save Puzzle", "Save your puzzle." );
 	wxMenuItem* scramblePuzzleMenuItem = new wxMenuItem( puzzleMenu, ID_ScramblePuzzle, "Scramble Puzzle", "Mix up the puzzle." );
 	wxMenuItem* solvePuzzleMenuItem = new wxMenuItem( puzzleMenu, ID_SolvePuzzle, "Solve Puzzle", "Show a solution sequence to the puzzle." );
-	wxMenuItem* undoMenuItem = new wxMenuItem( puzzleMenu, ID_Undo, "Undo", "Undo your last move." );
-	wxMenuItem* redoMenuItem = new wxMenuItem( puzzleMenu, ID_Redo, "Redo", "Redo your last move." );
+	wxMenuItem* undoMenuItem = new wxMenuItem( puzzleMenu, ID_Undo, "Undo\tCtrl+Z", "Undo your last move." );
+	wxMenuItem* redoMenuItem = new wxMenuItem( puzzleMenu, ID_Redo, "Redo\tCtrl+Y", "Redo your last move." );
 	wxMenuItem* exitMenuItem = new wxMenuItem( puzzleMenu, ID_Exit, "Exit", "Exit this program." );
 	puzzleMenu->Append( newPuzzleMenuItem );
 	puzzleMenu->AppendSeparator();
@@ -80,7 +80,12 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 	Bind( wxEVT_UPDATE_UI, &RubDivFrame::OnUpdateMenuItemUI, this, ID_Redo );
 	Bind( wxEVT_TIMER, &RubDivFrame::OnTimer, this, ID_Timer );
 
-	// TODO: Add Ctrl+Z and Ctrl+Y accelerators here for undo/redo.
+	wxAcceleratorEntry accelEntries[2];
+	accelEntries[0].Set( wxACCEL_CTRL, int( 'Z' ), ID_Undo );
+	accelEntries[1].Set( wxACCEL_CTRL, int( 'Y' ), ID_Redo );
+	
+	wxAcceleratorTable accelTable( sizeof( accelEntries ) / sizeof( wxAcceleratorEntry ), accelEntries );
+	SetAcceleratorTable( accelTable );
 
 	timer.Start(1);
 }

@@ -454,6 +454,7 @@ bool RubDivPuzzle::ManipulatePuzzle( const Move& move, RenderData& renderData )
 
 		if( manipulated )
 		{
+			renderData.squareOffset = move.squareOffset;
 			NormalizeAngle( renderData.rotationAngle );
 			renderData.rotationAngle -= M_PI / 2.f * float( move.rotateCCWCount );
 		}
@@ -476,6 +477,7 @@ bool RubDivPuzzle::ManipulatePuzzle( const Move& move, RenderData& renderData )
 
 		if( manipulated )
 		{
+			renderData.rowOrColumn = move.rowOrColumn;
 			float length = c3ga::norm( CalculateSquareCenter( renderData, 0 ) - CalculateSquareCenter( renderData, 1 ) );
 			if( orientation == VERTICAL && move.shiftDir == SHIFT_FORWARD || orientation == HORIZONTAL && move.shiftDir == SHIFT_BACKWARD )
 				renderData.translation += length;

@@ -49,6 +49,7 @@ void RubDivApp::SetPuzzle( RubDivPuzzle* puzzle )
 
 	moveHistory.clear();
 	moveQueue.clear();
+	historyIter = moveHistory.end();
 }
 
 void RubDivApp::EnqueueMove( const RubDivPuzzle::Move& move )
@@ -77,7 +78,25 @@ bool RubDivApp::ProcessMoveQueue( RubDivPuzzle::RenderData& renderData )
 
 void RubDivApp::AddHistory( const RubDivPuzzle::Move& move )
 {
+	while( true )
+	{
+		RubDivPuzzle::MoveList::iterator iter = historyIter;
+		if( iter == moveHistory.end() )
+			break;
+		
+		iter++;
+		if( iter == moveHistory.end() )
+			break;
+
+		moveHistory.erase( iter );
+	}	
 	
+	moveHistory.push_back( move );
+
+	if( historyIter == moveHistory.end() )
+		historyIter = moveHistory.begin();
+	else
+		historyIter++;
 }
 
 bool RubDivApp::GetMoveForUndo( RubDivPuzzle::Move& move )
@@ -85,6 +104,12 @@ bool RubDivApp::GetMoveForUndo( RubDivPuzzle::Move& move )
 	if( !CanUndo() )
 		return false;
 
+	RubDivPuzzle::Move inverseMove = *historyIter;
+	inverseMove.Invert( move );
+	if( historyIter == moveHistory.begin() )
+		historyIter = moveHistory.end();
+	else
+		historyIter--;
 	return true;
 }
 
@@ -93,17 +118,28 @@ bool RubDivApp::GetMoveForRedo( RubDivPuzzle::Move& move )
 	if( !CanRedo() )
 		return false;
 
+	if( historyIter == moveHistory.end() )
+		historyIter = moveHistory.begin();
+	else
+		historyIter++;
+	move = *historyIter;
 	return true;
 }
 
 bool RubDivApp::CanUndo( void )
 {
-	return false;
+	return( historyIter == moveHistory.end() ) ? false : true;
 }
 
 bool RubDivApp::CanRedo( void )
 {
-	return false;
+	RubDivPuzzle::MoveList::iterator iter = historyIter;
+	if( iter == moveHistory.end() )
+		iter = moveHistory.begin();
+	else
+		iter++;
+
+	return( iter == moveHistory.end() ) ? false : true;
 }
 
 // RubDivApp.cpp
