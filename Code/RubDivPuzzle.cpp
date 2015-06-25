@@ -139,7 +139,7 @@ void RubDivPuzzle::Scramble( void )
 	for( int i = 0; i < size; i++ )
 		columnArray[i] = i;
 
-	int iterationCount = 100;
+	int iterationCount = size;
 	for( int i = 0; i < iterationCount; i++ )
 	{
 		int columnArraySize = RandomInteger( 1, size );
@@ -442,7 +442,21 @@ bool RubDivPuzzle::TranslateMove( const RenderData& renderData, Move& move )
 	return false;
 }
 
-bool RubDivPuzzle::ManipulatePuzzle( const Move& move, RenderData& renderData )
+bool RubDivPuzzle::ManipulatePuzzle( const MoveList& moveList )
+{
+	MoveList::const_iterator iter = moveList.begin();
+	while( iter != moveList.end() )
+	{
+		const Move& move = *iter;
+		if( !ManipulatePuzzle( move ) )
+			return false;
+
+		iter++;
+	}
+	return true;
+}
+
+bool RubDivPuzzle::ManipulatePuzzle( const Move& move, RenderData* renderData /*= 0*/ )
 {
 	bool manipulated = false;
 
@@ -452,11 +466,11 @@ bool RubDivPuzzle::ManipulatePuzzle( const Move& move, RenderData& renderData )
 			if( RotateSquareMatrixCCW( move.squareOffset ) )
 				manipulated = true;
 
-		if( manipulated )
+		if( manipulated && renderData )
 		{
-			renderData.squareOffset = move.squareOffset;
-			NormalizeAngle( renderData.rotationAngle );
-			renderData.rotationAngle -= M_PI / 2.f * float( move.rotateCCWCount );
+			renderData->squareOffset = move.squareOffset;
+			NormalizeAngle( renderData->rotationAngle );
+			renderData->rotationAngle -= M_PI / 2.f * float( move.rotateCCWCount );
 		}
 	}
 	else if( move.rowOrColumn != -1 )
@@ -475,14 +489,14 @@ bool RubDivPuzzle::ManipulatePuzzle( const Move& move, RenderData& renderData )
 			}
 		}
 
-		if( manipulated )
+		if( manipulated && renderData )
 		{
-			renderData.rowOrColumn = move.rowOrColumn;
-			float length = c3ga::norm( CalculateSquareCenter( renderData, 0 ) - CalculateSquareCenter( renderData, 1 ) );
+			renderData->rowOrColumn = move.rowOrColumn;
+			float length = c3ga::norm( CalculateSquareCenter( *renderData, 0 ) - CalculateSquareCenter( *renderData, 1 ) );
 			if( orientation == VERTICAL && move.shiftDir == SHIFT_FORWARD || orientation == HORIZONTAL && move.shiftDir == SHIFT_BACKWARD )
-				renderData.translation += length;
+				renderData->translation += length;
 			else if( orientation == VERTICAL && move.shiftDir == SHIFT_BACKWARD || orientation == HORIZONTAL && move.shiftDir == SHIFT_FORWARD )
-				renderData.translation -= length;
+				renderData->translation -= length;
 		}
 	}
 

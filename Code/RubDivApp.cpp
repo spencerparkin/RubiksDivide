@@ -57,6 +57,16 @@ void RubDivApp::EnqueueMove( const RubDivPuzzle::Move& move )
 	moveQueue.push_back( move );
 }
 
+void RubDivApp::EnqueueMoveList( const RubDivPuzzle::MoveList& moveList )
+{
+	RubDivPuzzle::MoveList::const_iterator iter = moveList.begin();
+	while( iter != moveList.end() )
+	{
+		EnqueueMove( *iter );
+		iter++;
+	}
+}
+
 bool RubDivApp::ProcessMoveQueue( RubDivPuzzle::RenderData& renderData )
 {
 	if( !puzzle )
@@ -66,7 +76,7 @@ bool RubDivApp::ProcessMoveQueue( RubDivPuzzle::RenderData& renderData )
 	if( iter != moveQueue.end() )
 	{
 		RubDivPuzzle::Move move = *iter;
-		if( puzzle->ManipulatePuzzle( move, renderData ) )
+		if( puzzle->ManipulatePuzzle( move, &renderData ) )
 		{
 			moveQueue.erase( iter );
 			return true;

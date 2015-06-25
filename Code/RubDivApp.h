@@ -25,6 +25,7 @@ public:
 	RubDivFrame* GetFrame( void ) { return frame; }
 
 	void EnqueueMove( const RubDivPuzzle::Move& move );
+	void EnqueueMoveList( const RubDivPuzzle::MoveList& moveList );
 	bool ProcessMoveQueue( RubDivPuzzle::RenderData& renderData );
 	void AddHistory( const RubDivPuzzle::Move& move );
 	bool GetMoveForUndo( RubDivPuzzle::Move& move );

@@ -75,7 +75,8 @@ public:
 	void Render( GLenum mode, const RenderData& renderData ) const;
 
 	bool TranslateMove( const RenderData& renderData, Move& move );
-	bool ManipulatePuzzle( const Move& move, RenderData& renderData );
+	bool ManipulatePuzzle( const Move& move, RenderData* renderData = 0 );
+	bool ManipulatePuzzle( const MoveList& moveList );
 
 	struct Pick
 	{

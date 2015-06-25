@@ -96,7 +96,7 @@ RubDivFrame::RubDivFrame( wxWindow* parent, const wxPoint& pos /*= wxDefaultPosi
 
 void RubDivFrame::OnNewPuzzle( wxCommandEvent& event )
 {
-	int size = ( int )wxGetNumberFromUser( "What size of puzzle?", "Size:", "Puzzle Size", 4, 2, 32, this );
+	int size = ( int )wxGetNumberFromUser( "What size of puzzle?", "Size:", "Puzzle Size", 4, 2, 128, this );
 	if( size == -1 )
 		return;
 
@@ -131,13 +131,15 @@ void RubDivFrame::OnSolvePuzzle( wxCommandEvent& event )
 			}
 		}
 
-		//RubDivSolver solver;
-		//RubDivPuzzle::MoveList moveList;
-		//bool solved = solver.Solve( puzzle, moveList );
-		//wxASSERT( solved );
-		// TODO: Add solution move-list to the app's move queue.
-
-		canvas->Refresh();
+		RubDivSolver solver;
+		RubDivPuzzle::MoveList moveList;
+		bool solved = solver.Solve( puzzle, moveList );
+		wxASSERT( solved );
+		if( solved )
+		{
+			wxGetApp().EnqueueMoveList( moveList );
+			canvas->Refresh();
+		}
 	}
 }
 

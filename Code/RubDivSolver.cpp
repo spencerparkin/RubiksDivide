@@ -5,99 +5,175 @@
 
 RubDivSolver::RubDivSolver( void )
 {
-	//puzzleClone = 0;
+	puzzleClone = 0;
 }
 
 RubDivSolver::~RubDivSolver( void )
 {
 }
 
-#if 0
-
-bool RubDivSolver::Solve( const RubDivPuzzle* puzzle, MoveList& moveList )
+bool RubDivSolver::Solve( const RubDivPuzzle* puzzle, RubDivPuzzle::MoveList& moveList )
 {
+	wxASSERT( puzzleClone == 0 );
+
+	// We only deal with the vertical case, which is really no different than the horizontal case.
 	if( puzzle->GetOrientation() != RubDivPuzzle::VERTICAL )
 		return false;
 
 	moveList.clear();
-
 	puzzleClone = puzzle->Clone();
-
 	while( !puzzleClone->IsSolved() )
 	{
-		if( !FindCommutator( moveList ) )
+		RubDivPuzzle::MoveList algorithm;
+		if( FindAlgorithm( algorithm ) )
 		{
-			// Bail for now, but there may be something we need to do here.
-			break;
+			bool manipulated = puzzleClone->ManipulatePuzzle( algorithm );
+			wxASSERT( manipulated );
+			ConcatinateMoveList( moveList, algorithm );
+		}
+		else
+		{
+			RubDivPuzzle::Move rotateMove;
+			rotateMove.squareOffset = 2;
+			rotateMove.rotateCCWCount = 1;
+			rotateMove.rowOrColumn = -1;
+			rotateMove.shiftDir = RubDivPuzzle::SHIFT_NONE;
+
+			bool manipulated = puzzleClone->ManipulatePuzzle( rotateMove );
+			wxASSERT( manipulated );
+			moveList.push_back( rotateMove );
 		}
 	}
 
 	delete puzzleClone;
 	puzzleClone = 0;
+
+	CompressMoveList( moveList );
 	
 	return true;
 }
 
-bool RubDivSolver::FindCommutator( MoveList& moveList )
+void RubDivSolver::ConcatinateMoveList( RubDivPuzzle::MoveList& moveListDest, const RubDivPuzzle::MoveList& moveListSource )
+{
+	RubDivPuzzle::MoveList::const_iterator iter = moveListSource.begin();
+	while( iter != moveListSource.end() )
+	{
+		const RubDivPuzzle::Move& move = *iter;
+		moveListDest.push_back( move );
+		iter++;
+	}
+}
+
+bool RubDivSolver::FindAlgorithm( RubDivPuzzle::MoveList& algorithm )
 {
 	int size = puzzleClone->GetSize();
 
 	for( int i = 0; i < size; i++ )
 	{
-		for( int j = 0; j < size; j++ )
+		RubDivPuzzle::MoveList algorithmCCW, algorithmCW;
+
+		RubDivPuzzle::Move rotationMove;
+		rotationMove.squareOffset = 1;
+		rotationMove.rowOrColumn = -1;
+		rotationMove.shiftDir = RubDivPuzzle::SHIFT_NONE;
+
+		rotationMove.rotateCCWCount = 1;
+		bool foundCCW = FindAlgorithmForRow( i, rotationMove, algorithmCCW );
+			
+		rotationMove.rotateCCWCount = 3;
+		bool foundCW = FindAlgorithmForRow( i, rotationMove, algorithmCW );
+		
+		if( foundCCW && foundCW )
 		{
-			if( puzzleClone->GetColor( 1, i, j ) == RubDivPuzzle::Element::COLOR_B && puzzleClone->GetColor( 2, i, j ) == RubDivPuzzle::Element::COLOR_A )
-			{
-				AppendCommutator( moveList, i, j );
-				return true;
-			}
+			if( algorithmCCW.size() > algorithmCW.size() )
+				ConcatinateMoveList( algorithm, algorithmCCW );
+			else
+				ConcatinateMoveList( algorithm, algorithmCW );
 		}
+		else if( foundCCW )
+			ConcatinateMoveList( algorithm, algorithmCCW );
+		else if( foundCW )
+			ConcatinateMoveList( algorithm, algorithmCW );
+
+		if( algorithm.size() > 0 )
+			return true;
 	}
 
 	return false;
 }
 
-void RubDivSolver::AppendCommutator( MoveList& moveList, int i, int j )
+// Notice that for puzzles with an odd size, the centers cannot move.
+// So to avoid this special case, we always restore color A to the top
+// square, and color B to the bottom square.
+bool RubDivSolver::FindAlgorithmForRow( int row, const RubDivPuzzle::Move& rotationMove, RubDivPuzzle::MoveList& algorithm )
 {
-	Move shiftMove, unshiftMove;
-	Move rotateMove, unrotateMove;
-	Move preserveMove, unpreserveMove;
+	int size = puzzleClone->GetSize();
 
-	shiftMove.squareOffset = -1;
-	shiftMove.rotateCCWCount = 0;
-	shiftMove.columnOffset = j;
-	shiftMove.shiftDir = SHIFT_FORWARD;
-	moveList.push_back( shiftMove );
-
-	if( i == j )
-	{
-	}
+	int preservationColumn;
+	if( rotationMove.rotateCCWCount == 1 )
+		preservationColumn = row;
+	else if( rotationMove.rotateCCWCount == 3 )
+		preservationColumn = size - 1 - row;
 	else
+		return false;
+
+	RubDivPuzzle::MoveList shiftMoveList;
+	RubDivPuzzle::MoveList inverseShiftMoveList;
+
+	for( int j = 0; j < size; j++ )
 	{
-		rotateMove.squareOffset = 1;
-		rotateMove.rotateCCWCount = 1;
-		rotateMove.columnOffset = -1;
-		rotateMove.shiftDir = SHIFT_NONE;
-		moveList.push_back( rotateMove );
+		if( j == preservationColumn )
+			continue;
+
+		if( puzzleClone->GetColor( 1, row, j ) == RubDivPuzzle::Element::COLOR_B && puzzleClone->GetColor( 2, row, j ) == RubDivPuzzle::Element::COLOR_A )
+		{
+			RubDivPuzzle::Move shiftMove;
+			shiftMove.squareOffset = -1;
+			shiftMove.rotateCCWCount = 0;
+			shiftMove.rowOrColumn = j;
+			shiftMove.shiftDir = RubDivPuzzle::SHIFT_BACKWARD;
+			shiftMoveList.push_back( shiftMove );
+
+			RubDivPuzzle::Move inverseShiftMove;
+			shiftMove.Invert( inverseShiftMove );
+			inverseShiftMoveList.push_back( inverseShiftMove );
+		}
 	}
 
-	preserveMove.squareOffset = -1;
-	preserveMove.rotateCCWCount = 0;
-	preserveMove.columnOffset = i;
-	preserveMove.shiftDir = SHIFT_FORWARD;
-	moveList.push_back( preserveMove );
+	if( shiftMoveList.size() == 0 )
+		return false;
 
-	shiftMove.Invert( unshiftMove );
-	rotateMove.Invert( unrotateMove );
-	preserveMove.Invert( unrotateMove );
+	ConcatinateMoveList( algorithm, shiftMoveList );
 
-	moveList.push_back( unrotateMove );
-	moveList.push_back( unshiftMove );
-	moveList.push_back( rotateMove );
-	moveList.push_back( unpreserveMove );
-	moveList.push_back( unrotateMove );
+	algorithm.push_back( rotationMove );
+
+	RubDivPuzzle::Move preservationShiftMove;
+	preservationShiftMove.squareOffset = -1;
+	preservationShiftMove.rotateCCWCount = 0;
+	preservationShiftMove.rowOrColumn = preservationColumn;
+	preservationShiftMove.shiftDir = RubDivPuzzle::SHIFT_BACKWARD;
+	algorithm.push_back( preservationShiftMove );
+
+	RubDivPuzzle::Move inverseRotationMove;
+	rotationMove.Invert( inverseRotationMove );
+	algorithm.push_back( inverseRotationMove );
+
+	ConcatinateMoveList( algorithm, inverseShiftMoveList );
+
+	algorithm.push_back( rotationMove );
+
+	RubDivPuzzle::Move inversePreservationShiftMove;
+	preservationShiftMove.Invert( inversePreservationShiftMove );
+	algorithm.push_back( inversePreservationShiftMove );
+
+	algorithm.push_back( inverseRotationMove );
+
+	return true;
 }
 
-#endif
+void RubDivSolver::CompressMoveList( RubDivPuzzle::MoveList& moveList )
+{
+	//...
+}
 
 // RubDivSolver.cpp

@@ -133,7 +133,7 @@ void RubDivCanvas::OnMouseLeftUp( wxMouseEvent& event )
 			RubDivPuzzle::Move move;
 			if( puzzle->TranslateMove( renderData, move ) )
 			{
-				if( puzzle->ManipulatePuzzle( move, renderData ) )
+				if( puzzle->ManipulatePuzzle( move, &renderData ) )
 				{
 					wxGetApp().AddHistory( move );
 					
@@ -227,7 +227,7 @@ void RubDivCanvas::OnMouseCaptureLost( wxMouseCaptureLostEvent& event )
 bool RubDivCanvas::Animate( void )
 {
 	const float eps = 1e-2f;
-	const float lerp = 0.8f;
+	const float lerp = 0.5f;
 
 	if( pick.squareOffset == -1 )
 	{
