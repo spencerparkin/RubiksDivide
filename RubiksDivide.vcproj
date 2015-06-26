@@ -216,6 +216,14 @@
 				RelativePath=".\Code\RubDivSolver.h"
 				>
 			</File>
+			<File
+				RelativePath=".\Code\RubDivSolverV1.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Code\RubDivSolverV1.h"
+				>
+			</File>
 			<Filter
 				Name="c3ga"
 				>

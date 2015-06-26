@@ -4,7 +4,7 @@
 #include "RubDivApp.h"
 #include "RubDivPuzzle.h"
 #include "RubDivCanvas.h"
-#include "RubDivSolver.h"
+#include "RubDivSolverV1.h"
 
 #include <wx/menu.h>
 #include <wx/numdlg.h>
@@ -131,15 +131,16 @@ void RubDivFrame::OnSolvePuzzle( wxCommandEvent& event )
 			}
 		}
 
-		RubDivSolver solver;
+		RubDivSolver* solver = new RubDivSolverV1();
 		RubDivPuzzle::MoveList moveList;
-		bool solved = solver.Solve( puzzle, moveList );
+		bool solved = solver->Solve( puzzle, moveList );
 		wxASSERT( solved );
 		if( solved )
 		{
 			wxGetApp().EnqueueMoveList( moveList );
 			canvas->Refresh();
 		}
+		delete solver;
 	}
 }
 

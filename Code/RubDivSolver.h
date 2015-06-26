@@ -11,19 +11,15 @@ class RubDivSolver
 public:
 
 	RubDivSolver( void );
-	~RubDivSolver( void );
+	virtual ~RubDivSolver( void );
 
 	// Return a list of moves that solves the given puzzle.
-	bool Solve( const RubDivPuzzle* puzzle, RubDivPuzzle::MoveList& moveList );
+	virtual bool Solve( const RubDivPuzzle* puzzle, RubDivPuzzle::MoveList& moveList ) = 0;
 
-private:
+protected:
 
-	bool FindAlgorithm( RubDivPuzzle::MoveList& algorithm );
-	bool FindAlgorithmForRow( int row, const RubDivPuzzle::Move& rotationMove, RubDivPuzzle::MoveList& algorithm );
 	void ConcatinateMoveList( RubDivPuzzle::MoveList& moveListDest, const RubDivPuzzle::MoveList& moveListSource );
 	void CompressMoveList( RubDivPuzzle::MoveList& moveList );
-
-	RubDivPuzzle* puzzleClone;
 };
 
 // RubDivSolver.h
