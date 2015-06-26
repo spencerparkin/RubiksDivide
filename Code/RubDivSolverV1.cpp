@@ -9,6 +9,7 @@ RubDivSolverV1::RubDivSolverV1( void )
 
 /*virtual*/ RubDivSolverV1::~RubDivSolverV1( void )
 {
+	wxASSERT( puzzleClone == 0 );
 }
 
 /*virtual*/ bool RubDivSolverV1::Solve( const RubDivPuzzle* puzzle, RubDivPuzzle::MoveList& moveList )
