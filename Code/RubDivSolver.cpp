@@ -64,6 +64,8 @@ void RubDivSolver::ConcatinateMoveList( RubDivPuzzle::MoveList& moveListDest, co
 	}
 }
 
+// Note that this could generalize even further by solving multiple rows at the same time and using multiple preservation columns.
+// As long as there's no collision between the columns we solve in the rows and the preservation columns, it works out.
 bool RubDivSolver::FindAlgorithm( RubDivPuzzle::MoveList& algorithm )
 {
 	int size = puzzleClone->GetSize();
