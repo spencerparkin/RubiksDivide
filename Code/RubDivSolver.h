@@ -18,8 +18,8 @@ public:
 
 protected:
 
-	void ConcatinateMoveList( RubDivPuzzle::MoveList& moveListDest, const RubDivPuzzle::MoveList& moveListSource );
-	void CompressMoveList( RubDivPuzzle::MoveList& moveList );
+	static void ConcatinateMoveList( RubDivPuzzle::MoveList& moveListDest, const RubDivPuzzle::MoveList& moveListSource );
+	static void CompressMoveList( RubDivPuzzle::MoveList& moveList );
 };
 
 // RubDivSolver.h

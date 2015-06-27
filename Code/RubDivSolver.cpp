@@ -11,7 +11,7 @@ RubDivSolver::RubDivSolver( void )
 {
 }
 
-void RubDivSolver::ConcatinateMoveList( RubDivPuzzle::MoveList& moveListDest, const RubDivPuzzle::MoveList& moveListSource )
+/*static*/ void RubDivSolver::ConcatinateMoveList( RubDivPuzzle::MoveList& moveListDest, const RubDivPuzzle::MoveList& moveListSource )
 {
 	RubDivPuzzle::MoveList::const_iterator iter = moveListSource.begin();
 	while( iter != moveListSource.end() )
@@ -22,7 +22,7 @@ void RubDivSolver::ConcatinateMoveList( RubDivPuzzle::MoveList& moveListDest, co
 	}
 }
 
-void RubDivSolver::CompressMoveList( RubDivPuzzle::MoveList& moveList )
+/*static*/ void RubDivSolver::CompressMoveList( RubDivPuzzle::MoveList& moveList )
 {
 	//...
 }
