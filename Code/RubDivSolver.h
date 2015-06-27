@@ -6,6 +6,7 @@
 
 #include "RubDivPuzzle.h"
 
+// With what I've learned writing the solver derivatives, I can see an easy way of solving all faces of the NxNxN Rubik's cube.
 class RubDivSolver
 {
 public:
